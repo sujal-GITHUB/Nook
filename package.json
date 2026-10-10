@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "An offline-first creative workspace for stories, visual diaries, and personal archives.",
+  "desktopName": "Nook",
   "main": "desktop/main.cjs",
   "engines": {
     "node": ">=20.19.0"
@@ -15,7 +16,7 @@
     "desktop": "npm run build && electron .",
     "dist": "npm run build && electron-builder",
     "dist:linux": "npm run build && electron-builder --linux AppImage deb",
-    "dist:windows": "npm run build && electron-builder --windows nsis",
+    "dist:windows": "npm run build && electron-builder --windows nsis --x64",
     "dist:mac": "npm run build && electron-builder --mac dmg zip --universal"
   },
   "dependencies": {
@@ -43,6 +44,8 @@
     ],
     "linux": {
       "category": "Office",
+      "syncDesktopName": true,
+      "maintainer": "Nook Project <sujal-GITHUB@users.noreply.github.com>",
       "target": [
         "AppImage",
         "deb"
@@ -50,6 +53,7 @@
       "icon": "public/app-icon-512.png"
     },
     "win": {
+      "icon": "public/app-icon.svg",
       "target": [
         "nsis"
       ]
@@ -59,6 +63,7 @@
       "allowToChangeInstallationDirectory": true
     },
     "mac": {
+      "icon": "public/app-icon.svg",
       "target": [
         "dmg",
         "zip"

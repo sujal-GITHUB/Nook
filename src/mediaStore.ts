@@ -1,3 +1,5 @@
+import type { MediaMetadata } from './desktopBridge'
+
 export interface StoredMedia {
   id: string
   blob: Blob
@@ -28,6 +30,10 @@ export async function saveMedia(file: File, id: string = crypto.randomUUID()): P
     : 'application/octet-stream'
   const blob = new Blob([file], { type: safeType })
   const value: StoredMedia = { id, blob, name: file.name, mimeType: safeType, size: file.size }
+  if (window.nookDesktop) {
+    await window.nookDesktop.saveMedia({ id, name: value.name, mimeType: value.mimeType, size: value.size }, new Uint8Array(await blob.arrayBuffer()))
+    return value
+  }
   const db = await database()
   await new Promise<void>((resolve, reject) => {
     const request = db.transaction('assets', 'readwrite').objectStore('assets').put(value)
@@ -38,6 +44,13 @@ export async function saveMedia(file: File, id: string = crypto.randomUUID()): P
 }
 
 export async function getMedia(id: string): Promise<StoredMedia | undefined> {
+  if (window.nookDesktop) {
+    const asset = await window.nookDesktop.getMedia(id)
+    if (!asset) return undefined
+    const bytes = new Uint8Array(new ArrayBuffer(asset.bytes.byteLength))
+    bytes.set(asset.bytes)
+    return { ...asset.metadata, blob: new Blob([bytes.buffer], { type: asset.metadata.mimeType }) }
+  }
   const db = await database()
   return new Promise((resolve, reject) => {
     const request = db.transaction('assets', 'readonly').objectStore('assets').get(id)

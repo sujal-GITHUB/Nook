@@ -3,13 +3,20 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "description": "An offline-first creative workspace for stories, visual diaries, and personal archives.",
+  "main": "desktop/main.cjs",
   "engines": {
     "node": ">=20.19.0"
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1 --strictPort",
     "build": "tsc -b && vite build",
-    "preview": "vite preview --host 127.0.0.1 --strictPort"
+    "preview": "vite preview --host 127.0.0.1 --strictPort",
+    "desktop": "npm run build && electron .",
+    "dist": "npm run build && electron-builder",
+    "dist:linux": "npm run build && electron-builder --linux AppImage deb",
+    "dist:windows": "npm run build && electron-builder --windows nsis",
+    "dist:mac": "npm run build && electron-builder --mac dmg zip --universal"
   },
   "dependencies": {
     "@tiptap/extension-link": "^2.11.5",
@@ -19,13 +26,50 @@
     "lucide-react": "^0.468.0",
     "ogl": "^1.0.11",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "sql.js": "^1.14.2"
+  },
+  "build": {
+    "appId": "com.nook.workspace",
+    "productName": "Nook",
+    "artifactName": "Nook-${os}-${arch}.${ext}",
+    "asar": true,
+    "directories": { "output": "release", "buildResources": "build" },
+    "files": [
+      "dist/**/*",
+      "desktop/**/*",
+      "package.json",
+      "node_modules/sql.js/**/*"
+    ],
+    "linux": {
+      "category": "Office",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "public/app-icon-512.png"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity"
+    }
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "better-sqlite3": "^13.0.3",
     "electron": "^44.7.0",
     "electron-builder": "^26.15.3",
     "typescript": "^5.7.2",

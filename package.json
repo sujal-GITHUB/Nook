@@ -16,7 +16,7 @@
     "desktop": "npm run build && electron .",
     "dist": "npm run build && electron-builder",
     "dist:linux": "npm run build && electron-builder --linux AppImage deb",
-    "dist:windows": "npm run build && electron-builder --windows nsis --x64",
+    "dist:windows": "npm run build && electron-builder --win dir --x64 && node desktop/build-windows-installer.mjs",
     "dist:mac": "npm run build && electron-builder --mac dmg zip --universal"
   },
   "dependencies": {
@@ -55,12 +55,8 @@
     "win": {
       "icon": "public/app-icon.svg",
       "target": [
-        "nsis"
+        "dir"
       ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
     },
     "mac": {
       "icon": "public/app-icon.svg",

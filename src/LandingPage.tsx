@@ -1,14 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
-import { ArrowDownRight, ArrowUpRight, Download, FileText, Link2, ShieldCheck, X } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { ArrowDownRight, ArrowUpRight, Download, FileText, Link2, ShieldCheck } from 'lucide-react'
 import Dither from './Dither'
 import ShuffleText from './ShuffleText'
 import UseCases from './UseCases'
 import { BentoGrid, BentoGridItem } from './BentoGrid'
-
-type BeforeInstallPromptEvent = Event & {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
-}
 
 function LandingBrand() {
   return <a className="landing-brand" href="#top" aria-label="Nook home">
@@ -18,27 +13,7 @@ function LandingBrand() {
 }
 
 export default function LandingPage() {
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [installed, setInstalled] = useState(false)
-  const helpDialog = useRef<HTMLDialogElement>(null)
   const pageRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const onPrompt = (event: Event) => {
-      event.preventDefault()
-      setInstallPrompt(event as BeforeInstallPromptEvent)
-    }
-    const onInstalled = () => setInstalled(true)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
-
-    setInstalled(isStandalone)
-    window.addEventListener('beforeinstallprompt', onPrompt)
-    window.addEventListener('appinstalled', onInstalled)
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onPrompt)
-      window.removeEventListener('appinstalled', onInstalled)
-    }
-  }, [])
 
   useEffect(() => {
     const page = pageRef.current
@@ -60,22 +35,6 @@ export default function LandingPage() {
     return () => observer.disconnect()
   }, [])
 
-  const installOrOpen = async () => {
-    if (installed) {
-      window.location.assign('/app/')
-      return
-    }
-    if (!installPrompt) {
-      helpDialog.current?.showModal()
-      return
-    }
-
-    await installPrompt.prompt()
-    const choice = await installPrompt.userChoice
-    setInstallPrompt(null)
-    if (choice.outcome === 'accepted') setInstalled(true)
-  }
-
   return <main className="landing download-landing" id="top" ref={pageRef}>
     <div className="landing-dither-layer" aria-hidden="true"><Dither /></div>
     <svg className="grain-filter" aria-hidden="true">
@@ -89,7 +48,7 @@ export default function LandingPage() {
           <a href="#features">THE SPACE</a>
           <a href="#ideas">WAYS TO USE IT</a>
           <a href="#offline">OFFLINE, BY DESIGN</a>
-          <button className="download-nav-cta" type="button" onClick={() => void installOrOpen()}>{installed ? 'OPEN NOOK' : 'DOWNLOAD'} <ArrowUpRight size={13} /></button>
+          <a className="download-nav-cta" href="/download/">DOWNLOAD <ArrowUpRight size={13} /></a>
         </nav>
       </header>
       <div className="download-copy">
@@ -101,10 +60,10 @@ export default function LandingPage() {
           <em><ShuffleText text="online." delay={450} /></em>
         </h1>
         <p className="hero-description">One creative workspace for your words, photos, films, sounds, and keepsakes. Install Nook once. Your work stays on your device, ready offline.</p>
-        <button className="primary-cta download-cta" type="button" onClick={() => void installOrOpen()}>
+        <a className="primary-cta download-cta" href="/download/">
           <Download size={16} strokeWidth={1.8} />
-          {installed ? 'OPEN NOOK' : 'DOWNLOAD THE APP'}
-        </button>
+          DOWNLOAD THE APP
+        </a>
         <p className="download-note">FREE TO USE <i /> NO ACCOUNT <i /> YOUR FILES STAY HERE</p>
       </div>
       <a className="download-caption" href="#features">EXPLORE THE SPACE <i /><ArrowDownRight size={13} /></a>
@@ -149,17 +108,10 @@ export default function LandingPage() {
       <span className="section-kicker"><i /> YOUR SPACE IS READY</span>
       <h2 id="download-end-title">Bring it all<br /><em>with you.</em></h2>
       <p>One download. Your own space. Ready offline.</p>
-      <button className="primary-cta download-cta" type="button" onClick={() => void installOrOpen()}><Download size={16} strokeWidth={1.8} />{installed ? 'OPEN NOOK' : 'DOWNLOAD THE APP'}</button>
+      <a className="primary-cta download-cta" href="/download/"><Download size={16} strokeWidth={1.8} />DOWNLOAD THE APP</a>
     </section>
 
     <footer className="download-footer"><LandingBrand /><span>YOUR FILES STAY HERE.</span><a href="#top">BACK TO TOP ↑</a></footer>
 
-    <dialog className="install-dialog" ref={helpDialog} aria-labelledby="install-help-title">
-      <button className="install-dialog-close" type="button" aria-label="Close install instructions" onClick={() => helpDialog.current?.close()}><X size={18} /></button>
-      <span className="install-kicker"><i /> INSTALL NOOK ON THIS DEVICE</span>
-      <h2 id="install-help-title">Take your space<br /><em>with you.</em></h2>
-      <p className="install-dialog-copy">Open your browser’s menu and choose <strong>Install app</strong> or <strong>Add to Home Screen</strong>. Once installed, Nook opens as an offline workspace on this device.</p>
-      <button className="primary-cta" type="button" onClick={() => helpDialog.current?.close()}>GOT IT</button>
-    </dialog>
   </main>
 }

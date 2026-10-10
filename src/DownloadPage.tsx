@@ -34,8 +34,8 @@ export default function DownloadPage() {
         </article>
         <article className="os-download-card">
           <div className="os-card-heading"><PackageOpen size={20} aria-hidden="true" /><div><h2>Linux</h2><p>64-bit desktop distributions</p></div></div>
-          <InstallerLink href={`${latestDownload}/Nook-linux-x64.AppImage`} label="Download AppImage" />
-          <InstallerLink href={`${latestDownload}/Nook-linux-x64.deb`} label="Download Debian package" />
+          <InstallerLink href={`${latestDownload}/Nook-linux-x86_64.AppImage`} label="Download AppImage" />
+          <InstallerLink href={`${latestDownload}/Nook-linux-amd64.deb`} label="Download Debian package" />
         </article>
       </div>
 

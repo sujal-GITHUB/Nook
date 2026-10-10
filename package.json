@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "description": "An offline-first creative workspace for stories, visual diaries, and personal archives.",
+  "author": {
+    "name": "Nook Project",
+    "email": "sujal-GITHUB@users.noreply.github.com"
+  },
   "desktopName": "Nook",
   "main": "desktop/main.cjs",
   "engines": {
@@ -14,10 +18,10 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1 --strictPort",
     "desktop": "npm run build && electron .",
-    "dist": "npm run build && electron-builder",
-    "dist:linux": "npm run build && electron-builder --linux AppImage deb",
-    "dist:windows": "npm run build && electron-builder --win dir --x64 && node desktop/build-windows-installer.mjs",
-    "dist:mac": "npm run build && electron-builder --mac dmg zip --universal"
+    "dist": "npm run build && electron-builder --publish never",
+    "dist:linux": "npm run build && electron-builder --linux AppImage deb --publish never",
+    "dist:windows": "npm run build && electron-builder --win dir --x64 --publish never && node desktop/build-windows-installer.mjs",
+    "dist:mac": "npm run build && electron-builder --mac dmg zip --universal --publish never"
   },
   "dependencies": {
     "@tiptap/extension-link": "^2.11.5",

@@ -4,7 +4,7 @@
 
 Nook is an offline-first multimedia editor for making complete documents from writing, photos, videos, audio recordings, links, PDFs, and other files. Use one local workspace for travel journals, visual diaries, personal stories, project notes, and archives.
 
-The website is the product landing and download page. The editor runs as a desktop application for Linux, Windows, and macOS; it does not open as a browser app. There are no accounts or cloud document storage. Documents and media are kept on the computer running the desktop app.
+The website is the product landing and download page. The editor runs as an offline-first desktop application for Linux, Windows, and macOS, and as an Android app; it does not open as a browser editor. There are no accounts or cloud document storage. Documents and media stay on the device running Nook.
 
 ## Contents
 
@@ -26,6 +26,7 @@ Get Nook from the [latest GitHub Release](https://github.com/sujal-GITHUB/Nook/r
 | macOS, Intel and Apple silicon | [Nook-mac-universal.dmg](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-mac-universal.dmg) | Universal app |
 | Linux, x86_64 | [Nook-linux-x86_64.AppImage](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-linux-x86_64.AppImage) | Portable; recommended for Fedora |
 | Debian/Ubuntu, x86_64 | [Nook-linux-amd64.deb](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-linux-amd64.deb) | Debian package |
+| Android 7 and later | [Nook-android-universal.apk](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-android-universal.apk) | Install directly on a phone or tablet |
 
 These links work once a release with installer assets has been published. If the latest release page does not list installers, use the **Releases** page later; GitHub Actions run artifacts are temporary build outputs retained for 14 days, not permanent downloads.
 
@@ -84,6 +85,14 @@ The installer is for 64-bit Windows. This build is not code-signed, so Windows m
 
 The universal build supports Intel and Apple silicon Macs. It is not signed or notarized with an Apple Developer ID, so macOS may block the first launch. Only continue if you trust the copy from the official repository. After attempting to open it, macOS may let you approve it in **System Settings → Privacy & Security → Open Anyway**. See [Apple’s safety guidance for apps from unidentified developers](https://support.apple.com/en-us/102445).
 
+### Android 7 and later
+
+1. Download [Nook-android-universal.apk](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-android-universal.apk) from the official Releases page on your Android device.
+2. Open the APK from **Downloads**. If Android asks, allow your browser or file manager to install unknown apps, then return to the installer.
+3. Tap **Install**, then open **Nook** from your app list.
+
+The APK is built for direct installation and is not distributed through Google Play. Android keeps Nook's documents and attachments in local app storage. Android removes this private app data when Nook is uninstalled; portable backup export is currently available in the desktop app.
+
 ## Features
 
 ### Write and shape documents
@@ -104,16 +113,16 @@ The universal build supports Intel and Apple silicon Macs. It is not signed or n
 
 ### Keep work local and portable
 
-- Changes save automatically to local device storage; the editor shows when a page is saved.
-- Choose **Save PDF** for a readable document you can open or share in other apps. **Backup** creates a portable `.nook.json` package, including the media, that can be imported back into Nook.
+- Changes save automatically to local device storage; the editor shows when a page is saved. Android uses the device's local IndexedDB storage inside the app.
+- On desktop, choose **Save PDF** for a readable document you can open or share in other apps. **Backup** creates a portable `.nook.json` package, including the media, that can be imported back into Nook.
 - Switch between light and dark themes.
-- Use the installed desktop app without a network connection. The website is only needed to read about Nook and download installers.
+- Use the installed apps without a network connection. The website is only needed to read about Nook and download installers.
 
 **Links stay links:** saving a web link does not save the linked page. Opening a remote destination requires an internet connection; your local Nook documents remain available offline.
 
 ## Where your documents are stored
 
-Documents and media are stored in Nook's local application data on the current computer account. Nook does not provide account login, cloud storage, or automatic cross-device sync. Export `.nook.json` backups if you want a portable copy or a separate backup.
+Documents and media are stored in Nook's local application data on the current device. On desktop this is held in the current computer account; on Android it is held in the app's private local storage. Nook does not provide account login, cloud storage, or automatic cross-device sync. Export `.nook.json` backups if you want a portable copy or a separate backup.
 
 ## Run from source
 
@@ -135,6 +144,22 @@ Open the local URL printed by Vite to view the landing page and download informa
 npm run desktop
 ```
 
+For Android development, install Android Studio with the Android SDK and a Java 21 JDK, connect an Android device or start an emulator, then run:
+
+```sh
+npm run build:android
+npm run android:open
+```
+
+From Android Studio, run the `app` configuration on your device. To create a locally installable debug APK from the terminal:
+
+```sh
+cd android
+./gradlew assembleDebug
+```
+
+The APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`.
+
 `npm run build` builds the website only. `npm run build:desktop` builds the editor renderer with file-relative assets for Electron.
 
 ### Build installers
@@ -149,13 +174,14 @@ npm run dist:mac      # Universal macOS DMG and ZIP; requires macOS
 
 If Inno Setup is installed in a nonstandard location, set `ISCC_PATH` to the `ISCC.exe` path before running the Windows build.
 
-GitHub Actions builds Linux, Windows, and macOS packages for branch pushes and pull requests. Those runs produce temporary artifacts. To publish downloadable installers, push a new version tag (for example, `v0.1.4`). The tag workflow builds all platforms and attaches the installers to a GitHub Release. The release job requires repository Actions permissions to write contents.
+GitHub Actions builds Linux, Windows, macOS, and Android packages for branch pushes and pull requests. Those runs produce temporary artifacts. To publish downloadable installers, push a new version tag (the next version is `v0.1.4`). The tag workflow builds all platforms and attaches the installers to a GitHub Release. The Android APK is debug-signed for direct installation, not Google Play distribution. Because GitHub runners generate their debug keys, Android may require uninstalling an older APK before installing a later one; uninstalling erases that installation's local documents. Configure a persistent private signing key before distributing Android updates broadly. The release job requires repository Actions permissions to write contents.
 
 ## Current limitations
 
 - In-app audio recording, cloud sync, accounts, and collaboration are not available.
 - HTML and Markdown export are not available. Use PDF for a readable document copy and `.nook.json` for a portable editable backup.
 - Nook does not currently have a browser editor or browser-based document storage.
+- Android PDF preview/export, portable backup export, and native save-to-folder dialogs are not implemented yet. Android can create and edit local documents and attach/view supported media; use the desktop build for PDF export and portable backups.
 - macOS builds are not signed or notarized, and Windows builds are not code-signed.
 
 ## Security

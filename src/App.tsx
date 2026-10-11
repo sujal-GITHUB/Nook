@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
 import { MediaBlock } from './MediaBlock'
+import { GlassSurface } from './GlassSurface'
 import { getMedia, saveMedia } from './mediaStore'
 import { createWelcomeDocument, deleteDocument as removeDocument, listDocuments, saveDocument } from './documentStore'
 import type { LocalDocument } from './desktopBridge'
@@ -92,7 +93,7 @@ export function EditorWorkspace() {
   const [ready, setReady] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [saved, setSaved] = useState(true)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(() => !window.matchMedia('(max-width: 720px)').matches)
   const [dark, setDark] = useState(true)
   const saveTimer = useRef<number | undefined>(undefined)
   const saveQueue = useRef<Promise<void>>(Promise.resolve())
@@ -350,6 +351,7 @@ export function EditorWorkspace() {
     setTitle(document.title)
     editor.commands.setContent(emptyContent, false)
     editor.commands.focus('start')
+    if (window.matchMedia('(max-width: 720px)').matches) setSidebarOpen(false)
   }
 
   const selectDocument = async (document: NookDocument) => {
@@ -437,14 +439,25 @@ export function EditorWorkspace() {
       <div className="top-actions"><button className="icon-button" aria-label="Toggle sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><PanelLeft size={17} /></button></div>
     </header>
     <div className="workspace">
-      {sidebarOpen && <aside className="sidebar">
+      {sidebarOpen && <aside id="workspace-sidebar" className="sidebar">
         <div className="sidebar-head"><span>Workspace</span></div>
         <div className="workspace-name"><div className="workspace-icon">✦</div><span>Personal</span><ChevronDown size={14} /></div>
         <div className="section-label"><span>Pages</span><button className="icon-button" aria-label="Create page" title="Create page" onClick={() => void createDocument()}><Plus size={16} /></button></div>
         <label className="page-search"><Search size={14} /><input aria-label="Search pages" placeholder="Find a page…" value={pageSearch} onChange={event => setPageSearch(event.target.value)} /></label>
-        <nav className="page-list" aria-label="Local pages">{documents.filter(document => document.title.toLocaleLowerCase().includes(pageSearch.toLocaleLowerCase())).map(document => <div key={document.id} className="page-row"><button className={document.id === activeId ? 'page-item selected' : 'page-item'} onClick={() => void selectDocument(document)}><FileText size={16} /><span>{document.title || 'Untitled page'}</span></button>{document.id === activeId && <button className="page-delete" aria-label={`Delete ${document.title || 'untitled page'}`} title="Delete page" onClick={() => void deleteCurrentDocument()}><Trash2 size={14} /></button>}</div>)}</nav>
+        <nav className="page-list" aria-label="Local pages">{documents.filter(document => document.title.toLocaleLowerCase().includes(pageSearch.toLocaleLowerCase())).map(document => <div key={document.id} className="page-row"><button className={document.id === activeId ? 'page-item selected' : 'page-item'} onClick={() => { void selectDocument(document); if (window.matchMedia('(max-width: 720px)').matches) setSidebarOpen(false) }}><FileText size={16} /><span>{document.title || 'Untitled page'}</span></button>{document.id === activeId && <button className="page-delete" aria-label={`Delete ${document.title || 'untitled page'}`} title="Delete page" onClick={() => void deleteCurrentDocument()}><Trash2 size={14} /></button>}</div>)}</nav>
         <div className="sidebar-bottom"><button onClick={() => setDark(!dark)}><Sparkles size={16} /> {dark ? 'Light mode' : 'Dark mode'}</button><div className="storage"><small>Pages and media stay on this device</small></div></div>
       </aside>}
+      <div className="mobile-dock" role="group" aria-label="Workspace shortcuts">
+        <GlassSurface className="mobile-dock-glass" style={{ width: '100%', height: 70 }}>
+          <div className="mobile-dock-content">
+            <div className="mobile-dock-brand"><img src="./app-icon.svg" alt="" /><span>Nook</span></div>
+            <button className={sidebarOpen ? 'mobile-dock-action is-active' : 'mobile-dock-action'} aria-label="Toggle pages sidebar" aria-expanded={sidebarOpen} aria-controls="workspace-sidebar" onClick={() => setSidebarOpen(open => !open)}><PanelLeft size={19} /><span>Pages</span></button>
+            <button className="mobile-dock-action" aria-label="Create page" onClick={() => void createDocument()}><Plus size={20} /><span>New</span></button>
+            <button className="mobile-dock-action" aria-label="Add media" onClick={() => uploadRef.current?.click()}><ImagePlus size={19} /><span>Media</span></button>
+            <button className="mobile-dock-action" aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'} onClick={() => setDark(value => !value)}><Sparkles size={18} /><span>Theme</span></button>
+          </div>
+        </GlassSurface>
+      </div>
       <main className="main-content">
         <div className="document-header"><div className="breadcrumbs"><span>Personal</span><span>/</span><span>Pages</span></div><div className="document-actions"><span className="save-state">{saved ? <><Check size={14} /> Saved locally</> : 'Saving…'}</span><button className="icon-button" aria-label="Find and replace in page" title="Find and replace (Ctrl/⌘+F)" onClick={() => setFindOpen(open => !open)}><Search size={16} /></button><button className="icon-button" aria-label="Duplicate page" title="Duplicate page" onClick={() => void duplicateDocument()}><Copy size={16} /></button><button className="icon-button" aria-label="Delete page" title="Delete page" onClick={() => void deleteCurrentDocument()}><Trash2 size={16} /></button><button className="icon-button" aria-label="Import Nook backup" title="Import a .nook.json backup" onClick={() => importRef.current?.click()}><Upload size={16} /></button><button className="document-export-button" aria-label="Save document as readable PDF" title="Save a readable PDF" onClick={() => void savePdf().catch(error => setNotice(error instanceof Error ? `Could not save PDF: ${error.message}` : 'Could not save PDF'))}><FileDown size={15} /><span>Save PDF</span></button><button className="document-backup-button" aria-label="Export Nook backup" title="Export portable backup (.nook.json)" onClick={() => void exportDocument().catch(() => setNotice('Could not export because a media file is unavailable'))}><ArrowDownToLine size={15} /><span>Backup</span></button></div></div>
         {findOpen && <section className="find-panel" aria-label="Find and replace">

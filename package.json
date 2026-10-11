@@ -17,6 +17,8 @@
     "dev": "vite --host 127.0.0.1 --strictPort",
     "build": "tsc -b && vite build",
     "build:desktop": "tsc -b && vite build --mode desktop --base=./",
+    "build:android": "tsc -b && vite build --mode android --base=./ && node scripts/prepare-android.mjs && cap sync android",
+    "android:open": "cap open android",
     "preview": "vite preview --host 127.0.0.1 --strictPort",
     "desktop": "npm run build:desktop && electron .",
     "dist": "npm run build:desktop && electron-builder --publish never",
@@ -25,6 +27,8 @@
     "dist:mac": "npm run build:desktop && electron-builder --mac dmg zip --universal --publish never"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
     "@tiptap/extension-link": "^2.11.5",
     "@tiptap/extension-placeholder": "^2.11.5",
     "@tiptap/react": "^2.11.5",
@@ -40,7 +44,10 @@
     "productName": "Nook",
     "artifactName": "Nook-${os}-${arch}.${ext}",
     "asar": true,
-    "directories": { "output": "release", "buildResources": "build" },
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
     "files": [
       "dist/**/*",
       "desktop/**/*",
@@ -73,6 +80,7 @@
     }
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

@@ -69,7 +69,7 @@ export default function LandingPage() {
       <a className="download-caption" href="#features">EXPLORE THE SPACE <i /><ArrowDownRight size={13} /></a>
     </section>
 
-    <section className="story-section" aria-labelledby="story-title" data-reveal>
+    <section className="story-section" id="features" aria-labelledby="story-title" data-reveal>
       <div className="story-mark" aria-hidden="true"><span /><span /><span /></div>
       <div className="story-copy">
         <span className="section-kicker"><i /> ONE DOCUMENT, ALL THE PIECES</span>

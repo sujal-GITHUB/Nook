@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      input: mode === 'desktop' ? 'desktop.html' : 'index.html',
+      input: mode === 'desktop' ? 'desktop.html' : mode === 'android' ? { index: 'mobile.html' } : 'index.html',
       output: {
         manualChunks(id) {
           if (id.includes('/node_modules/@tiptap/') || id.includes('/node_modules/prosemirror-')) return 'editor'

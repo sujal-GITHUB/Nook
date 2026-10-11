@@ -1,35 +1,35 @@
-import { Archive, AudioLines, BookOpen, Images, Palette, Projector } from 'lucide-react'
+import { Archive, BookOpen, FileText, Images, Map, PenLine } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const FEATURES = [
   {
     title: 'Travel journals',
-    description: 'Keep photographs, field notes, saved links, and recordings together as the story of a place.',
-    icon: BookOpen
+    description: 'Bring map links, photos, ticket PDFs, and voice memos together as the story of a place.',
+    icon: Map
   },
   {
     title: 'Visual diaries',
-    description: 'Give everyday images their context with captions, passing thoughts, and the moments around them.',
+    description: 'Pair everyday photos and videos with captions, notes, and the sounds around them.',
     icon: Images
   },
   {
-    title: 'Moodboards',
-    description: 'Gather visual references, inspiring links, and written fragments while an idea takes shape.',
-    icon: Palette
+    title: 'Personal stories',
+    description: 'Weave writing, photographs, recordings, and keepsakes into one document you can revisit.',
+    icon: PenLine
   },
   {
-    title: 'Sound stories',
-    description: 'Place audio recordings beside the notes, images, and memories that give them meaning.',
-    icon: AudioLines
+    title: 'Project notes',
+    description: 'Keep drafts, reference links, PDFs, and other project files in the notes they belong with.',
+    icon: FileText
   },
   {
-    title: 'Creative projects',
-    description: 'Bring drafts, reference files, links, and visual inspiration together from first thought onward.',
-    icon: Projector
+    title: 'Multimedia documents',
+    description: 'Combine text with images, playable audio and video, PDFs, and downloadable attachments.',
+    icon: BookOpen
   },
   {
     title: 'Personal archives',
-    description: 'Keep meaningful photographs, documents, notes, and keepsakes close for the stories they hold.',
+    description: 'Keep meaningful photos, documents, links, and media saved together on your device.',
     icon: Archive
   }
 ] as { title: string; description: string; icon: LucideIcon }[]

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { ArrowDownRight, ArrowUpRight, Download, FileText, Link2, ShieldCheck } from 'lucide-react'
+import { ArrowDownRight, ArrowUpRight, AudioLines, Download, FileText, HardDrive, Images, Link2, Paperclip, ShieldCheck, WifiOff } from 'lucide-react'
 import Dither from './Dither'
 import ShuffleText from './ShuffleText'
 import UseCases from './UseCases'
@@ -52,19 +52,19 @@ export default function LandingPage() {
         </nav>
       </header>
       <div className="download-copy">
-        <p className="eyebrow"><span className="eyebrow-rule" /> A PRIVATE SPACE FOR YOUR WHOLE STORY</p>
-        <h1 id="download-title" aria-label="Everything you need. Nothing online.">
-          <span><ShuffleText text="Everything" /></span>
-          <span><ShuffleText text="you need." delay={150} /></span>
-          <em><ShuffleText text="Nothing" delay={300} /></em>
-          <em><ShuffleText text="online." delay={450} /></em>
+        <p className="eyebrow"><span className="eyebrow-rule" /> ONE OFFLINE MULTIMEDIA EDITOR</p>
+        <h1 id="download-title" aria-label="Everything in one place. Create without the internet.">
+          <span><ShuffleText text="Everything in" /></span>
+          <span><ShuffleText text="one place." delay={150} /></span>
+          <em><ShuffleText text="Create without" delay={300} /></em>
+          <em><ShuffleText text="the internet." delay={450} /></em>
         </h1>
-        <p className="hero-description">One creative workspace for your words, photos, films, sounds, and keepsakes. Install Nook once. Your work stays on your device, ready offline.</p>
+        <p className="hero-description">Write, then add photos, videos, voice memos, audio, links, PDFs, and files to the same document. Nook keeps every piece together, autosaved on your device and ready offline.</p>
         <a className="primary-cta download-cta" href="/download/">
           <Download size={16} strokeWidth={1.8} />
-          DOWNLOAD THE APP
+          DOWNLOAD NOOK
         </a>
-        <p className="download-note">FREE TO USE <i /> NO ACCOUNT <i /> YOUR FILES STAY HERE</p>
+        <p className="download-note">ONE FLEXIBLE CANVAS <i /> AUTOSAVED LOCALLY <i /> WORK OFFLINE</p>
       </div>
       <a className="download-caption" href="#features">EXPLORE THE SPACE <i /><ArrowDownRight size={13} /></a>
     </section>
@@ -72,43 +72,42 @@ export default function LandingPage() {
     <section className="story-section" aria-labelledby="story-title" data-reveal>
       <div className="story-mark" aria-hidden="true"><span /><span /><span /></div>
       <div className="story-copy">
-        <span className="section-kicker"><i /> MADE FOR THE THINGS YOU KEEP</span>
-        <h2 id="story-title">Less collecting<br />in pieces.<br /><em>More seeing<br />the whole.</em></h2>
+        <span className="section-kicker"><i /> ONE DOCUMENT, ALL THE PIECES</span>
+        <h2 id="story-title">More than<br />a text editor.<br /><em>Your whole<br />story.</em></h2>
       </div>
       <div className="story-aside">
-        <p>A ticket from the train. A voice note from the trail. The photograph you almost forgot to take.</p>
-        <p>Put the pieces on one page. Let a collection become a story you can return to.</p>
-        <span className="story-aside-note"><Link2 size={14} /> YOUR LIFE, IN ITS OWN WORDS</span>
+        <p>Write a passage, place a photo beside it, add the trail recording, and keep the ticket PDF in the same document.</p>
+        <p>No shuffling between apps. Just one flexible canvas where words and media stay in context.</p>
+        <span className="story-aside-note"><Link2 size={14} /> EVERYTHING IN ONE PLACE</span>
       </div>
     </section>
 
-
     <section className="usage-section" id="ideas" aria-labelledby="use-cases-title">
       <div className="section-intro use-cases-intro" data-reveal>
-        <span className="section-kicker"><i /> A FEW PLACES TO BEGIN</span>
-        <h2 id="use-cases-title">A place for<br /><em>every kind of story.</em></h2>
+        <span className="section-kicker"><i /> START WITH WHATEVER YOU HAVE</span>
+        <h2 id="use-cases-title">One canvas for<br /><em>every kind of story.</em></h2>
       </div>
       <UseCases />
     </section>
 
     <section className="offline-section" id="offline" aria-labelledby="offline-title">
       <div className="offline-content" data-reveal>
-        <span className="section-kicker"><i /> PRIVATE BY DEFAULT</span>
-        <h2 id="offline-title">Your work<br />stays <em>yours.</em></h2>
-        <p>Your pages and media are saved on this device. No account is needed to use the workspace, and your documents aren’t sent to a cloud library.</p>
+        <span className="section-kicker"><i /> NO INTERNET NEEDED</span>
+        <h2 id="offline-title">Create<br /><em>offline.</em></h2>
+        <p>After installation, write, add media, and return to your documents without a connection. Your pages and files stay in local storage on your device.</p>
       </div>
       <div className="offline-points" data-reveal>
-        <article><ShieldCheck aria-hidden="true" /><div><h3>Kept on your device</h3><p>Pages save in this browser profile; attached media stays in local browser storage.</p></div></article>
-        <article><Download aria-hidden="true" /><div><h3>Ready when you are</h3><p>Install Nook after the first visit, then reopen the workspace offline.</p></div></article>
-        <article><FileText aria-hidden="true" /><div><h3>Take your work with you</h3><p>Export a page with its media as a portable JSON package.</p></div></article>
+        <article><ShieldCheck aria-hidden="true" /><div><h3>Autosaved as you work</h3><p>Edits are saved to local storage automatically as your document changes.</p></div></article>
+        <article><WifiOff aria-hidden="true" /><div><h3>Ready without a connection</h3><p>Open Nook and continue working offline after it has been installed.</p></div></article>
+        <article><FileText aria-hidden="true" /><div><h3>Keep the whole document</h3><p>Export a page with its media as a portable Nook document package.</p></div></article>
       </div>
     </section>
 
     <section className="download-end" aria-labelledby="download-end-title" data-reveal>
-      <span className="section-kicker"><i /> YOUR SPACE IS READY</span>
-      <h2 id="download-end-title">Bring it all<br /><em>with you.</em></h2>
-      <p>One download. Your own space. Ready offline.</p>
-      <a className="primary-cta download-cta" href="/download/"><Download size={16} strokeWidth={1.8} />DOWNLOAD THE APP</a>
+      <span className="section-kicker"><i /> EVERYTHING IN ONE PLACE</span>
+      <h2 id="download-end-title">Create without<br /><em>the internet.</em></h2>
+      <p>Your words, media, and ideas together in one offline workspace.</p>
+      <a className="primary-cta download-cta" href="/download/"><Download size={16} strokeWidth={1.8} />DOWNLOAD NOOK</a>
     </section>
 
     <footer className="download-footer"><LandingBrand /><span>YOUR FILES STAY HERE.</span><a href="#top">BACK TO TOP ↑</a></footer>

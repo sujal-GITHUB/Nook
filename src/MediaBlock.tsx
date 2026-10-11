@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NodeViewWrapper, type NodeViewProps, ReactNodeViewRenderer } from '@tiptap/react'
 import { Node } from '@tiptap/core'
-import { Download, FileText, ImageOff } from 'lucide-react'
+import { RiDownloadLine as Download, RiFileTextLine as FileText, RiImage2Line as ImageOff } from '@remixicon/react'
 import { getMedia } from './mediaStore'
 
 function MediaView({ node, updateAttributes, selected }: NodeViewProps) {

@@ -1,10 +1,10 @@
-import type { LucideIcon } from 'lucide-react'
+import type { RemixiconComponentType } from '@remixicon/react'
 import { GlassSurface } from './GlassSurface'
 
 export type MobileSiteDockLink = {
   label: string
   href: string
-  icon: LucideIcon
+  icon: RemixiconComponentType
 }
 
 export function MobileSiteDock({ links }: { links: MobileSiteDockLink[] }) {

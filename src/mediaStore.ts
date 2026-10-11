@@ -13,13 +13,13 @@ let databasePromise: Promise<IDBDatabase> | undefined
 
 const KNOWN_MIME_TYPES = new Set([
   'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif',
-  'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac',
+  'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac', 'audio/flac', 'audio/3gpp', 'audio/amr',
   'video/mp4', 'video/ogg', 'video/webm', 'video/quicktime', 'application/pdf',
 ])
 
 const MIME_BY_EXTENSION: Record<string, string> = {
   avif: 'image/avif', gif: 'image/gif', jpeg: 'image/jpeg', jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
-  aac: 'audio/aac', flac: 'audio/flac', m4a: 'audio/mp4', m4b: 'audio/mp4',
+  aac: 'audio/aac', amr: 'audio/amr', '3gp': 'audio/3gpp', flac: 'audio/flac', m4a: 'audio/mp4', m4b: 'audio/mp4',
   mp3: 'audio/mpeg', oga: 'audio/ogg', ogg: 'audio/ogg', opus: 'audio/ogg', wav: 'audio/wav', wave: 'audio/wav',
   m4v: 'video/mp4', mov: 'video/quicktime', mp4: 'video/mp4', ogv: 'video/ogg', webm: 'video/webm',
   pdf: 'application/pdf',
@@ -54,9 +54,12 @@ export async function saveMedia(file: File, id: string = crypto.randomUUID()): P
   }
   const db = await database()
   await new Promise<void>((resolve, reject) => {
-    const request = db.transaction('assets', 'readwrite').objectStore('assets').put(value)
-    request.onsuccess = () => resolve()
+    const transaction = db.transaction('assets', 'readwrite')
+    const request = transaction.objectStore('assets').put(value)
     request.onerror = () => reject(request.error ?? new Error('Could not save media'))
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(transaction.error ?? new Error('Could not save media'))
+    transaction.onabort = () => reject(transaction.error ?? new Error('Saving this media file was interrupted'))
   })
   return value
 }

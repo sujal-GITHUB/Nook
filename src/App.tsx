@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { EditorContent, useEditor } from '@tiptap/react'
-import { Extension, type JSONContent } from '@tiptap/core'
+import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
+import { Extension, Mark, mergeAttributes, type JSONContent } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
@@ -11,7 +11,7 @@ import { createWelcomeDocument, deleteDocument as removeDocument, listDocuments,
 import type { LocalDocument } from './desktopBridge'
 import {
   ArrowDownToLine, Bold, Check, ChevronDown, Copy, FileDown, FileText, Heading1, Heading2, ImagePlus,
-  Italic, Link2, List, PanelLeft, Plus, Quote, Redo2, Search, Sparkles, Strikethrough, Trash2, Undo2, Upload,
+  Italic, Link2, List, Music2, Palette, PanelLeft, Plus, Quote, Redo2, Search, Sparkles, Strikethrough, Trash2, Undo2, Upload,
 } from 'lucide-react'
 
 type NookDocument = LocalDocument
@@ -74,9 +74,13 @@ function sanitizeContent(value: unknown): JSONContent {
   const clean = structuredClone(value) as JSONContent
   const visit = (node: JSONContent) => {
     if (node.marks) node.marks = node.marks.filter(mark => {
-      if (mark.type !== 'link') return true
-      const href = mark.attrs?.href
-      return typeof href === 'string' && isSafeLink(href)
+      if (mark.type === 'link') {
+        const href = mark.attrs?.href
+        return typeof href === 'string' && isSafeLink(href)
+      }
+      if (mark.type === 'textFont') return mark.attrs?.family === 'serif' || mark.attrs?.family === 'sans' || mark.attrs?.family === 'mono'
+      if (mark.type === 'textColor') return typeof mark.attrs?.color === 'string' && textColors.some(color => color.value === mark.attrs?.color)
+      return true
     })
     node.content?.forEach(visit)
   }
@@ -85,6 +89,59 @@ function sanitizeContent(value: unknown): JSONContent {
 }
 
 const emptyContent = { type: 'doc', content: [{ type: 'paragraph' }] }
+
+const fontFamilies = {
+  serif: "Georgia, 'Times New Roman', serif",
+  sans: "Arial, Helvetica, sans-serif",
+  mono: "'Courier New', monospace",
+} as const
+
+const textColors = [
+  { name: 'Paper', value: '#eeece4' },
+  { name: 'Stone', value: '#afaea2' },
+  { name: 'Crimson', value: '#d21319' },
+  { name: 'Indigo', value: '#7885d5' },
+  { name: 'Sage', value: '#82aa91' },
+  { name: 'Rose', value: '#d68a9a' },
+]
+
+const TextFont = Mark.create({
+  name: 'textFont',
+  addAttributes() {
+    return {
+      family: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-nook-font'),
+        renderHTML: attributes => {
+          const family = attributes.family as keyof typeof fontFamilies | null
+          return family && family in fontFamilies ? { 'data-nook-font': family, style: `font-family: ${fontFamilies[family]}` } : {}
+        },
+      },
+    }
+  },
+  parseHTML() { return [{ tag: 'span[data-nook-font]' }] },
+  renderHTML({ HTMLAttributes }) { return ['span', mergeAttributes(HTMLAttributes), 0] },
+})
+
+const TextColor = Mark.create({
+  name: 'textColor',
+  addAttributes() {
+    return {
+      color: {
+        default: null,
+        parseHTML: element => element.getAttribute('data-nook-color'),
+        renderHTML: attributes => {
+          const color = attributes.color
+          return typeof color === 'string' && textColors.some(option => option.value === color)
+            ? { 'data-nook-color': color, style: `color: ${color}` }
+            : {}
+        },
+      },
+    }
+  },
+  parseHTML() { return [{ tag: 'span[data-nook-color]' }] },
+  renderHTML({ HTMLAttributes }) { return ['span', mergeAttributes(HTMLAttributes), 0] },
+})
 
 export function EditorWorkspace() {
   const [documents, setDocuments] = useState<NookDocument[]>([])
@@ -102,9 +159,12 @@ export function EditorWorkspace() {
   const activeIdRef = useRef(activeId)
   const documentsRef = useRef<NookDocument[]>([])
   const uploadRef = useRef<HTMLInputElement>(null)
+  const audioUploadRef = useRef<HTMLInputElement>(null)
   const importRef = useRef<HTMLInputElement>(null)
   const [notice, setNotice] = useState('')
   const [blockMenuOpen, setBlockMenuOpen] = useState(false)
+  const [fontMenuOpen, setFontMenuOpen] = useState(false)
+  const [colorMenuOpen, setColorMenuOpen] = useState(false)
   const blockMenuOpenRef = useRef(false)
   const [pageSearch, setPageSearch] = useState('')
   const [findOpen, setFindOpen] = useState(false)
@@ -184,7 +244,7 @@ export function EditorWorkspace() {
   }, [])
 
   const editor = useEditor({
-    extensions: [StarterKit, Link.configure({ openOnClick: false }), MediaBlock, Placeholder.configure({ placeholder: 'Start writing…' }), slashCommands],
+    extensions: [StarterKit, Link.configure({ openOnClick: false }), TextFont, TextColor, MediaBlock, Placeholder.configure({ placeholder: 'Start writing…' }), slashCommands],
     content: emptyContent,
     editorProps: {
       handleDrop: (_view, event) => {
@@ -211,6 +271,16 @@ export function EditorWorkspace() {
           .then(() => { if (generation === editGeneration.current) setSaved(true) }).catch(() => setNotice('Could not save this page. Export a backup before closing.'))
       }, 500)
     },
+  })
+
+  const formatState = useEditorState({
+    editor,
+    selector: ({ editor: currentEditor }) => ({
+      bold: currentEditor?.isActive('bold') ?? false,
+      italic: currentEditor?.isActive('italic') ?? false,
+      strike: currentEditor?.isActive('strike') ?? false,
+      link: currentEditor?.isActive('link') ?? false,
+    }),
   })
 
   useEffect(() => { document.documentElement.dataset.theme = dark ? 'dark' : 'light' }, [dark])
@@ -405,12 +475,26 @@ export function EditorWorkspace() {
     } catch { setNotice('Could not delete this page') }
   }
 
-  const toolbar = useMemo(() => [
-    { label: 'Bold', icon: Bold, action: () => editor?.chain().focus().toggleBold().run(), active: editor?.isActive('bold') },
-    { label: 'Italic', icon: Italic, action: () => editor?.chain().focus().toggleItalic().run(), active: editor?.isActive('italic') },
-    { label: 'Strike', icon: Strikethrough, action: () => editor?.chain().focus().toggleStrike().run(), active: editor?.isActive('strike') },
-    { label: 'Link', icon: Link2, action: () => { const url = window.prompt('Paste a link'); if (!url) return; if (isSafeLink(url)) editor?.chain().focus().setLink({ href: url }).run(); else setNotice('Use a web, email, or phone link') } },
-  ], [editor])
+  const toolbar = [
+    { label: 'Bold', icon: Bold, action: () => editor?.chain().focus().toggleBold().run(), active: formatState?.bold },
+    { label: 'Italic', icon: Italic, action: () => editor?.chain().focus().toggleItalic().run(), active: formatState?.italic },
+    { label: 'Strike', icon: Strikethrough, action: () => editor?.chain().focus().toggleStrike().run(), active: formatState?.strike },
+    { label: 'Link', icon: Link2, action: () => { const url = window.prompt('Paste a link'); if (!url) return; if (isSafeLink(url)) editor?.chain().focus().setLink({ href: url }).run(); else setNotice('Use a web, email, or phone link') }, active: formatState?.link },
+  ]
+
+  const applyFont = (family: keyof typeof fontFamilies) => {
+    if (!editor) return
+    const { from, to } = editor.state.selection
+    editor.chain().focus().setTextSelection({ from, to }).setMark('textFont', { family }).run()
+    setFontMenuOpen(false)
+  }
+
+  const applyTextColor = (color: string) => {
+    if (!editor) return
+    const { from, to } = editor.state.selection
+    editor.chain().focus().setTextSelection({ from, to }).setMark('textColor', { color }).run()
+    setColorMenuOpen(false)
+  }
 
   const matches = editor ? findTextMatches(editor, findTerm) : []
   const findNext = () => {
@@ -454,6 +538,7 @@ export function EditorWorkspace() {
             <button className={sidebarOpen ? 'mobile-dock-action is-active' : 'mobile-dock-action'} aria-label="Toggle pages sidebar" aria-expanded={sidebarOpen} aria-controls="workspace-sidebar" onClick={() => setSidebarOpen(open => !open)}><PanelLeft size={19} /><span>Pages</span></button>
             <button className="mobile-dock-action" aria-label="Create page" onClick={() => void createDocument()}><Plus size={20} /><span>New</span></button>
             <button className="mobile-dock-action" aria-label="Add media" onClick={() => uploadRef.current?.click()}><ImagePlus size={19} /><span>Media</span></button>
+            <button className="mobile-dock-action" aria-label="Add an audio file" onClick={() => audioUploadRef.current?.click()}><Music2 size={19} /><span>Audio</span></button>
             <button className="mobile-dock-action" aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'} onClick={() => setDark(value => !value)}><Sparkles size={18} /><span>Theme</span></button>
           </div>
         </GlassSurface>
@@ -473,8 +558,27 @@ export function EditorWorkspace() {
           <div className="page-icon">✦</div>
           <input className="title-input" value={title} maxLength={500} onChange={e => updateTitle(e.target.value)} aria-label="Document title" />
           <h1 className="print-title">{title || 'Untitled document'}</h1>
-        <div className="toolbar-container"><div className="format-toolbar"><button className="format-select" onClick={() => setBlockMenuOpen(!blockMenuOpen)}>Style <ChevronDown size={13} /></button>{toolbar.map(({ label, icon: Icon, action, active }) => <button key={label} className={active ? 'format-button active' : 'format-button'} aria-label={label} onClick={action}><Icon size={16} /></button>)}<span className="toolbar-divider" /><button className="format-button" aria-label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()}><List size={16} /></button><button className="format-button" aria-label="Quote" onClick={() => editor?.chain().focus().toggleBlockquote().run()}><Quote size={16} /></button><span className="toolbar-divider" /><button className="format-button format-add-media" aria-label="Add media" title="Choose images, audio, video, PDFs, or other files" onClick={() => uploadRef.current?.click()}><ImagePlus size={16} /><span>Add media</span></button><span className="toolbar-spacer" /><button className="format-button" aria-label="Undo" onClick={() => editor?.chain().focus().undo().run()}><Undo2 size={16} /></button><button className="format-button" aria-label="Redo" onClick={() => editor?.chain().focus().redo().run()}><Redo2 size={16} /></button></div>{blockMenuOpen && <div className="block-menu"><button onClick={() => { editor?.chain().focus().setParagraph().run(); setBlockMenuOpen(false) }}>Paragraph</button><button onClick={() => { editor?.chain().focus().toggleHeading({ level: 1 }).run(); setBlockMenuOpen(false) }}><Heading1 size={16} /> Heading 1</button><button onClick={() => { editor?.chain().focus().toggleHeading({ level: 2 }).run(); setBlockMenuOpen(false) }}><Heading2 size={16} /> Heading 2</button></div>}</div>
-          <input ref={uploadRef} className="hidden-input" type="file" multiple onChange={event => { void addMediaBatch(event.target.files ?? undefined); event.currentTarget.value = '' }} />
+        <div className="toolbar-container">
+          <div className="format-toolbar" role="toolbar" aria-label="Text formatting">
+            <button type="button" className="format-select" aria-expanded={blockMenuOpen} onClick={() => { setFontMenuOpen(false); setColorMenuOpen(false); setBlockMenuOpen(open => !open) }}>Style <ChevronDown size={13} /></button>
+            <button type="button" className="format-select" aria-label="Choose typeface" aria-expanded={fontMenuOpen} onClick={() => { setBlockMenuOpen(false); setColorMenuOpen(false); setFontMenuOpen(open => !open) }}>Font <ChevronDown size={13} /></button>
+            <button type="button" className="format-select color-select" aria-label="Choose text color" aria-expanded={colorMenuOpen} onClick={() => { setBlockMenuOpen(false); setFontMenuOpen(false); setColorMenuOpen(open => !open) }}><Palette size={15} /><span>Color</span></button>
+            {toolbar.map(({ label, icon: Icon, action, active }) => <button type="button" key={label} className={active ? 'format-button active' : 'format-button'} aria-label={label} aria-pressed={active ?? false} onMouseDown={event => event.preventDefault()} onClick={action}><Icon size={16} /></button>)}
+            <span className="toolbar-divider" />
+            <button type="button" className="format-button" aria-label="Bulleted list" onMouseDown={event => event.preventDefault()} onClick={() => editor?.chain().focus().toggleBulletList().run()}><List size={16} /></button>
+            <button type="button" className="format-button" aria-label="Quote" onMouseDown={event => event.preventDefault()} onClick={() => editor?.chain().focus().toggleBlockquote().run()}><Quote size={16} /></button>
+            <span className="toolbar-divider" />
+            <button type="button" className="format-button format-add-media" aria-label="Add media, including audio" title="Choose images, audio, video, PDFs, or other files" onClick={() => uploadRef.current?.click()}><ImagePlus size={16} /><span>Add media</span></button>
+            <span className="toolbar-spacer" />
+            <button type="button" className="format-button" aria-label="Undo" onMouseDown={event => event.preventDefault()} onClick={() => editor?.chain().focus().undo().run()}><Undo2 size={16} /></button>
+            <button type="button" className="format-button" aria-label="Redo" onMouseDown={event => event.preventDefault()} onClick={() => editor?.chain().focus().redo().run()}><Redo2 size={16} /></button>
+          </div>
+          {blockMenuOpen && <div className="block-menu"><button onMouseDown={event => event.preventDefault()} onClick={() => { editor?.chain().focus().setParagraph().run(); setBlockMenuOpen(false) }}>Paragraph</button><button onMouseDown={event => event.preventDefault()} onClick={() => { editor?.chain().focus().toggleHeading({ level: 1 }).run(); setBlockMenuOpen(false) }}><Heading1 size={16} /> Heading 1</button><button onMouseDown={event => event.preventDefault()} onClick={() => { editor?.chain().focus().toggleHeading({ level: 2 }).run(); setBlockMenuOpen(false) }}><Heading2 size={16} /> Heading 2</button></div>}
+          {fontMenuOpen && <div className="block-menu font-menu" role="group" aria-label="Typeface options"><button type="button" onMouseDown={event => event.preventDefault()} onClick={() => applyFont('serif')}><span className="font-sample font-serif">Aa</span>Serif</button><button type="button" onMouseDown={event => event.preventDefault()} onClick={() => applyFont('sans')}><span className="font-sample font-sans">Aa</span>Sans serif</button><button type="button" onMouseDown={event => event.preventDefault()} onClick={() => applyFont('mono')}><span className="font-sample font-mono">Aa</span>Monospace</button></div>}
+          {colorMenuOpen && <div className="block-menu color-menu" role="group" aria-label="Text color options">{textColors.map(color => <button type="button" key={color.value} aria-label={`${color.name} text`} title={color.name} onMouseDown={event => event.preventDefault()} onClick={() => applyTextColor(color.value)}><span className="color-swatch" style={{ backgroundColor: color.value }} />{color.name}</button>)}</div>}
+        </div>
+          <input ref={uploadRef} className="hidden-input" type="file" accept="image/*,video/*,audio/*,application/pdf,*/*" multiple onChange={event => { void addMediaBatch(event.target.files ?? undefined); event.currentTarget.value = '' }} />
+          <input ref={audioUploadRef} className="hidden-input" type="file" accept="audio/*,.mp3,.m4a,.wav,.ogg,.aac,.flac,.opus" multiple onChange={event => { void addMediaBatch(event.target.files ?? undefined); event.currentTarget.value = '' }} />
           <input ref={importRef} className="hidden-input" type="file" accept="application/json,.json" onChange={event => { void importDocument(event.target.files?.[0]); event.currentTarget.value = '' }} />
           {notice && <div className="notice" role="status">{notice}<button aria-label="Dismiss notification" onClick={() => setNotice('')}>×</button></div>}
           <EditorContent editor={editor} />

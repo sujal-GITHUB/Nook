@@ -2197,6 +2197,18 @@ kbd {
   color: var(--stone);
 }
 
+.os-platform-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  border: 1px solid rgb(175 174 162 / 20%);
+  border-radius: 10px;
+  color: var(--paper);
+  background: rgb(175 174 162 / 8%);
+}
+
 .os-card-heading h2 {
   margin: 0;
   color: var(--paper);

@@ -1,8 +1,9 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron')
+const { app, BrowserWindow, dialog, ipcMain, shell } = require('electron')
 const initializeSqlite = require('sql.js')
 const crypto = require('node:crypto')
 const fs = require('node:fs/promises')
 const path = require('node:path')
+const { pathToFileURL } = require('node:url')
 
 const isDocumentId = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(value)
 const isAssetId = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(value)
@@ -103,6 +104,47 @@ function registerHandlers() {
       throw error
     }
   })
+
+  ipcMain.handle('workspace:save-media-copy', async (event, id) => {
+    if (!isAssetId(id)) throw new TypeError('Invalid media id')
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) throw new Error('The Nook window is no longer available')
+    const metadata = queryRows('SELECT id, name, mimeType, size FROM assets WHERE id = ?', [id])[0]
+    if (!metadata) throw new Error('The attached file is no longer available')
+    const safeName = path.basename(metadata.name).replace(/[\\/:*?"<>|\u0000-\u001f]/g, '-').replace(/[. ]+$/g, '').slice(0, 180) || 'attachment'
+    const extension = path.extname(safeName).slice(1).toLowerCase()
+    const source = path.join(assetsDirectory, safeFileName(id))
+    const result = await dialog.showSaveDialog(window, {
+      title: 'Save a copy of this attachment',
+      defaultPath: safeName,
+      ...(extension ? { filters: [{ name: `${extension.toUpperCase()} file`, extensions: [extension] }] } : {}),
+    })
+    if (result.canceled || !result.filePath) return false
+    const info = await fs.stat(source)
+    if (info.size !== metadata.size) throw new Error('The attached file is incomplete')
+    await fs.copyFile(source, result.filePath)
+    return true
+  })
+
+  ipcMain.handle('workspace:export-pdf', async (event, title) => {
+    if (typeof title !== 'string' || title.length > 500) throw new TypeError('Invalid PDF title')
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) throw new Error('The Nook window is no longer available')
+    const safeTitle = title.trim().replace(/[\\/:*?"<>|\u0000-\u001f]/g, '-').replace(/[. ]+$/g, '').slice(0, 120) || 'Nook document'
+    const result = await dialog.showSaveDialog(window, {
+      title: 'Save document as PDF',
+      defaultPath: `${safeTitle}.pdf`,
+      filters: [{ name: 'PDF document', extensions: ['pdf'] }],
+    })
+    if (result.canceled || !result.filePath) return false
+    const pdf = await window.webContents.printToPDF({
+      printBackground: true,
+      pageSize: 'A4',
+      margins: { top: 0.55, bottom: 0.55, left: 0.62, right: 0.62 },
+    })
+    await fs.writeFile(result.filePath, pdf, { mode: 0o600 })
+    return true
+  })
 }
 
 async function createWindow() {
@@ -111,7 +153,7 @@ async function createWindow() {
     height: 960,
     minWidth: 760,
     minHeight: 560,
-    backgroundColor: '#f7f8f5',
+    backgroundColor: '#1b1e4a',
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -126,10 +168,11 @@ async function createWindow() {
     if (url.startsWith('https://') || url.startsWith('mailto:')) void shell.openExternal(url)
     return { action: 'deny' }
   })
+  const rendererUrl = pathToFileURL(path.join(__dirname, '..', 'dist', 'desktop.html')).href
   window.webContents.on('will-navigate', (event, url) => {
-    if (url !== `file://${path.join(__dirname, '..', 'dist', 'index.html')}`) event.preventDefault()
+    if (url !== rendererUrl) event.preventDefault()
   })
-  await window.loadFile(path.join(__dirname, '..', 'dist', 'index.html'), { query: { app: 'desktop' } })
+  await window.loadURL(rendererUrl)
 }
 
 app.whenReady().then(async () => {

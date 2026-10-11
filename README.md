@@ -1,78 +1,121 @@
 # Nook
 
-**A private, offline-first workspace for complete multimedia documents.** Bring writing, photos, video, audio, links, PDFs, and other files together in one place to make travel journals, visual diaries, project notes, and personal archives.
+**Everything in one place. Create without the internet.**
 
-Nook is built to work without an account or cloud storage. Your documents and attached media stay on your device, and the desktop app can be used without an internet connection.
+Nook is an offline-first multimedia editor for making complete documents from writing, photos, videos, audio recordings, links, PDFs, and other files. Use one local workspace for travel journals, visual diaries, personal stories, project notes, and archives.
 
-## Download Nook
+There are no accounts or cloud document storage. Desktop documents and media are kept on your computer. The browser version stores its workspace in the browser profile and is available offline after its first successful load.
 
-Download the latest desktop release from [GitHub Releases](https://github.com/sujal-GITHUB/Nook/releases/latest). Choose the installer for your operating system:
+## Contents
 
-| Operating system | Download | Package |
+- [Download](#download)
+- [Install Nook](#install-nook)
+- [Features](#features)
+- [Where your documents are stored](#where-your-documents-are-stored)
+- [Run from source](#run-from-source)
+- [Current limitations](#current-limitations)
+- [Security](#security)
+
+## Download
+
+Get Nook from the [latest GitHub Release](https://github.com/sujal-GITHUB/Nook/releases/latest). Download the installer for your system:
+
+| System | Download | Notes |
 | --- | --- | --- |
-| Windows 10/11, 64-bit | `Nook-win-x64.exe` | Windows installer |
-| macOS, Intel or Apple silicon | `Nook-mac-universal.dmg` | Universal disk image |
-| Linux, 64-bit | `Nook-linux-x86_64.AppImage` | Portable application |
-| Debian or Ubuntu, 64-bit | `Nook-linux-amd64.deb` | Debian package |
+| Windows 10/11, x64 | [Nook-win-x64.exe](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-win-x64.exe) | Standard installer |
+| macOS, Intel and Apple silicon | [Nook-mac-universal.dmg](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-mac-universal.dmg) | Universal app |
+| Linux, x86_64 | [Nook-linux-x86_64.AppImage](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-linux-x86_64.AppImage) | Portable; recommended for Fedora |
+| Debian/Ubuntu, x86_64 | [Nook-linux-amd64.deb](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-linux-amd64.deb) | Debian package |
 
-If the latest release page has no installers yet, a release has not been published. Builds shown under GitHub Actions are temporary workflow artifacts and are retained for 14 days; use the Releases page for stable downloads.
+These links work once a release with installer assets has been published. If the latest release page does not list installers, use the **Releases** page later; GitHub Actions run artifacts are temporary build outputs retained for 14 days, not permanent downloads.
 
-## Install
+## Install Nook
 
 ### Fedora and other Linux distributions
 
-The AppImage is the recommended download for Fedora. Save `Nook-linux-x86_64.AppImage`, then make it executable and launch it:
+Use the AppImage on Fedora. It does not need a system-wide installation.
+
+1. Download [Nook-linux-x86_64.AppImage](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-linux-x86_64.AppImage) and open your **Downloads** folder.
+2. In the file manager, right-click the AppImage, open **Properties → Permissions**, and enable **Allow executing file as a program** (wording varies by desktop environment).
+3. Close Properties and double-click the AppImage to start Nook.
+
+Or launch it in a terminal from the download folder:
 
 ```sh
 chmod +x Nook-linux-x86_64.AppImage
 ./Nook-linux-x86_64.AppImage
 ```
 
-You can also mark the file as executable in your file manager, then double-click it. If your system reports that FUSE is unavailable, install the FUSE 2 compatibility package provided by your distribution or use the AppImage's supported extraction option.
-
-The `.deb` package is for Debian and Ubuntu, not Fedora. On Debian or Ubuntu, install the downloaded package with:
+If Nook reports that FUSE is missing on standard Fedora Workstation, install its FUSE 2 compatibility libraries and retry:
 
 ```sh
-sudo apt install ./Nook-linux-amd64.deb
+sudo dnf install fuse fuse-libs
 ```
 
-### Windows
+On Fedora Atomic desktops such as Silverblue or Kinoite, use the distribution's recommended AppImage workflow instead of layering packages without checking the system guidance. The `.deb` download is for Debian and Ubuntu; it is not the Fedora package.
 
-1. Download `Nook-win-x64.exe` from the latest release.
-2. Open the installer and follow the setup prompts. You can choose an installation location and optionally create a desktop shortcut.
-3. Launch **Nook** from the Start menu or desktop shortcut.
+### Debian and Ubuntu
 
-The current installer is for 64-bit Windows. Builds are not code-signed, so Windows may show a publisher or SmartScreen warning. Only install a copy obtained from the official Nook repository if you choose to proceed.
+Choose either the AppImage steps above or install the `.deb` package:
+
+1. Download [Nook-linux-amd64.deb](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-linux-amd64.deb).
+2. Open a terminal in the folder containing the download and install it:
+
+   ```sh
+   sudo apt install ./Nook-linux-amd64.deb
+   ```
+
+3. Open **Nook** from your applications menu.
+
+### Windows 10/11
+
+1. Download [Nook-win-x64.exe](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-win-x64.exe).
+2. Open the downloaded installer and follow the setup wizard. Choose an install location and whether to add a desktop shortcut.
+3. Start **Nook** from the Start menu or the desktop shortcut.
+
+The installer is for 64-bit Windows. This build is not code-signed, so Windows may show a publisher or SmartScreen warning. Check that the installer came from the official Nook Releases page before deciding whether to continue.
 
 ### macOS
 
-1. Download `Nook-mac-universal.dmg` from the latest release.
-2. Open the disk image and drag **Nook** into **Applications**.
-3. Eject the mounted Nook disk image, then launch Nook from Applications.
+1. Download [Nook-mac-universal.dmg](https://github.com/sujal-GITHUB/Nook/releases/latest/download/Nook-mac-universal.dmg).
+2. Open the downloaded disk image.
+3. Drag **Nook** into **Applications**, then eject the mounted Nook disk image.
+4. Open Nook from **Applications**.
 
-The universal build supports both Intel and Apple silicon Macs. The current app is not signed or notarized with an Apple Developer ID, so macOS may warn that it cannot verify the developer. Only use a copy downloaded from the official Nook repository.
+The universal build supports Intel and Apple silicon Macs. It is not signed or notarized with an Apple Developer ID, so macOS may block the first launch. Only continue if you trust the copy from the official repository. After attempting to open it, macOS may let you approve it in **System Settings → Privacy & Security → Open Anyway**. See [Apple’s safety guidance for apps from unidentified developers](https://support.apple.com/en-us/102445).
 
-## What you can make
+## Features
 
-- **Travel journals:** combine trip notes with local photos, videos, audio, and saved links.
-- **Visual diaries and personal stories:** place media alongside formatted writing and captions.
-- **Project notes and archives:** keep reference files and ideas together in a searchable local workspace.
-- **Multimedia documents:** work with images, video, audio, PDFs, and other attachments in the same document.
+### Write and shape documents
 
-Nook stores remote links as links; it does not download the linked web pages. Opening those destinations still requires an internet connection. Local attachments remain available offline when stored on the device.
+- Create and manage multiple local pages in a personal workspace.
+- Format text with bold, italic, strikethrough, headings, bulleted lists, block quotes, and links.
+- Use the `/` block-style menu in an empty paragraph to choose a paragraph or heading.
+- Undo and redo edits, and find and replace text within the current page.
+- Search the workspace by page title; rename, duplicate, and delete pages.
 
-## Current features
+### Bring media into the document
 
-- Multiple documents with search, rename, duplicate, and delete.
-- Rich text with headings, lists, quotes, links, undo, and redo.
-- Insert local images, video, audio, PDFs, and other files with a picker or drag and drop; paste images where supported.
-- Captions and preview or playback controls for supported media.
-- Automatic saving to local storage.
-- Versioned `.nook.json` export and import, including referenced media.
-- An installable browser app (PWA) with an offline application shell after its first successful load.
-- Native desktop builds for Linux, Windows, and macOS.
+- Add local images, video, audio, PDFs, and other files with the file picker or drag and drop. Paste images where supported.
+- View images with captions, play supported local audio and video, preview PDFs, and download other attachments from their file cards.
+- Keep an audio recording or voice memo made elsewhere as an attachment alongside the writing and images it belongs with. Nook does not currently record audio inside the app.
+- Files up to 500 MB can be added. Actual limits may be lower in a browser because browser storage quotas vary by device and browser.
 
-Browser documents and media are stored in that browser profile's IndexedDB storage and remain subject to browser/device storage limits. Desktop document data and media are stored in the current user's local application data. Nook does not provide cloud sync or an account service.
+### Keep work local and portable
+
+- Changes save automatically to local device storage; the editor shows when a page is saved.
+- Export a page as a versioned `.nook.json` document package that includes its referenced media, then import that package into Nook.
+- Switch between light and dark themes.
+- Use the desktop app without a network connection. The browser PWA caches its app shell for offline launches after it has loaded successfully once.
+
+**Links stay links:** saving a web link does not save the linked page. Opening a remote destination requires an internet connection. The browser workspace and desktop workspace use separate local storage and do not sync with each other.
+
+## Where your documents are stored
+
+- **Desktop:** document data and media are stored in Nook's application data on the current computer account.
+- **Browser/PWA:** documents and media are stored in the browser profile's IndexedDB. Browser storage quotas and profile deletion can affect availability.
+
+Nook does not provide account login, cloud storage, or automatic cross-device sync. Export `.nook.json` backups if you want a portable copy or a separate backup.
 
 ## Run from source
 
@@ -88,35 +131,33 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. The editor route is `/app/`.
-
-To launch the Electron desktop app during development:
+Open the local URL printed by Vite. The editor is at `/app/`. To run the Electron desktop shell during development:
 
 ```sh
 npm run desktop
 ```
 
-### Build desktop installers
+### Build installers
 
-Build each installer on its target operating system:
+Build each desktop package on its target operating system:
 
 ```sh
 npm run dist:linux    # Linux x64 AppImage and DEB
-npm run dist:windows  # Windows x64 installer (requires Inno Setup 6 or 7)
-npm run dist:mac      # Universal macOS DMG and ZIP
+npm run dist:windows  # Windows x64 installer; requires Windows and Inno Setup 6 or 7
+npm run dist:mac      # Universal macOS DMG and ZIP; requires macOS
 ```
 
-The Windows installer build requires Windows and Inno Setup. You can set `ISCC_PATH` if `ISCC.exe` is not in a standard Inno Setup installation directory. macOS distribution is currently unsigned and not notarized.
+If Inno Setup is installed in a nonstandard location, set `ISCC_PATH` to the `ISCC.exe` path before running the Windows build.
 
-GitHub Actions builds the platform packages for pushes and pull requests. Those run artifacts are temporary. To publish a release, push a new version tag such as `v0.1.2`; the workflow builds all three platforms and attaches the installers to a GitHub Release. The workflow needs repository Actions permissions that allow the release job to write repository contents.
+GitHub Actions builds Linux, Windows, and macOS packages for branch pushes and pull requests. Those runs produce temporary artifacts. To publish downloadable installers, push a new version tag (for example, `v0.1.2`). The tag workflow builds all platforms and attaches the installers to a GitHub Release. The release job requires repository Actions permissions to write contents.
 
-## Data and security
+## Current limitations
 
-- Nook does not require an account and does not sync documents to a server.
-- Imported editor content is parsed as structured document data; links are restricted to supported safe URL schemes.
-- The Electron renderer is sandboxed with context isolation and no Node.js integration. Filesystem access is handled in the main process through a limited preload bridge.
-- Desktop media is stored locally alongside the application's document data. Export `.nook.json` backups to move documents or keep an independent copy.
+- In-app audio recording, cloud sync, accounts, and collaboration are not available.
+- PDF, HTML, and Markdown export are not available. The current portable export is `.nook.json`.
+- Browser storage is managed by the browser and may have quotas; the desktop app is preferable for large local media collections.
+- macOS builds are not signed or notarized, and Windows builds are not code-signed.
 
-## Not currently included
+## Security
 
-Cloud sync, account services, PDF/HTML/Markdown export, ZIP-based `.mmdoc` packages, advanced recovery tools, and signed/notarized installers are not currently available. The browser PWA and desktop app use local storage but have platform-specific storage locations; they do not automatically sync with each other.
+The Electron renderer runs with sandboxing and context isolation, with Node.js integration disabled. Filesystem operations are handled by the desktop main process through a limited preload bridge. Imported document content is validated as structured data, and supported links are restricted to safe URL schemes.

@@ -149,7 +149,7 @@ npm run dist:mac      # Universal macOS DMG and ZIP; requires macOS
 
 If Inno Setup is installed in a nonstandard location, set `ISCC_PATH` to the `ISCC.exe` path before running the Windows build.
 
-GitHub Actions builds Linux, Windows, and macOS packages for branch pushes and pull requests. Those runs produce temporary artifacts. To publish downloadable installers, push a new version tag (for example, `v0.1.2`). The tag workflow builds all platforms and attaches the installers to a GitHub Release. The release job requires repository Actions permissions to write contents.
+GitHub Actions builds Linux, Windows, and macOS packages for branch pushes and pull requests. Those runs produce temporary artifacts. To publish downloadable installers, push a new version tag (for example, `v0.1.3`). The tag workflow builds all platforms and attaches the installers to a GitHub Release. The release job requires repository Actions permissions to write contents.
 
 ## Current limitations
 

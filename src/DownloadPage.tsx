@@ -1,4 +1,4 @@
-import { ArrowDownToLine, ArrowLeft, ArrowUpRight, Apple, PackageOpen, PanelsTopLeft, Smartphone } from 'lucide-react'
+import { ArrowDownToLine, ArrowLeft, ArrowUpRight, Apple, PanelsTopLeft, Smartphone, Terminal } from 'lucide-react'
 import Dither from './Dither'
 
 const repository = 'https://github.com/sujal-GITHUB/Nook'
@@ -25,20 +25,20 @@ export default function DownloadPage() {
 
       <div className="os-download-grid">
         <article className="os-download-card">
-          <div className="os-card-heading"><Apple size={20} aria-hidden="true" /><div><h2>macOS</h2><p>For Apple silicon and Intel Macs</p></div></div>
+          <div className="os-card-heading"><span className="os-platform-icon"><Apple size={21} strokeWidth={1.7} aria-hidden="true" /></span><div><h2>macOS</h2><p>For Apple silicon and Intel Macs</p></div></div>
           <InstallerLink href={`${latestDownload}/Nook-mac-universal.dmg`} label="Download for Mac" />
         </article>
         <article className="os-download-card">
-          <div className="os-card-heading"><PanelsTopLeft size={20} aria-hidden="true" /><div><h2>Windows</h2><p>64-bit Windows 10 or later</p></div></div>
+          <div className="os-card-heading"><span className="os-platform-icon"><PanelsTopLeft size={21} strokeWidth={1.7} aria-hidden="true" /></span><div><h2>Windows</h2><p>64-bit Windows 10 or later</p></div></div>
           <InstallerLink href={`${latestDownload}/Nook-win-x64.exe`} label="Download for Windows" />
         </article>
         <article className="os-download-card">
-          <div className="os-card-heading"><PackageOpen size={20} aria-hidden="true" /><div><h2>Linux</h2><p>64-bit desktop distributions</p></div></div>
+          <div className="os-card-heading"><span className="os-platform-icon"><Terminal size={21} strokeWidth={1.7} aria-hidden="true" /></span><div><h2>Linux</h2><p>64-bit desktop distributions</p></div></div>
           <InstallerLink href={`${latestDownload}/Nook-linux-x86_64.AppImage`} label="Download AppImage" />
           <InstallerLink href={`${latestDownload}/Nook-linux-amd64.deb`} label="Download Debian package" />
         </article>
         <article className="os-download-card">
-          <div className="os-card-heading"><Smartphone size={20} aria-hidden="true" /><div><h2>Android</h2><p>Phones and tablets · Android 7+</p></div></div>
+          <div className="os-card-heading"><span className="os-platform-icon"><Smartphone size={21} strokeWidth={1.7} aria-hidden="true" /></span><div><h2>Android</h2><p>Phones and tablets · Android 7+</p></div></div>
           <InstallerLink href={`${latestDownload}/Nook-android-universal.apk`} label="Download APK" />
         </article>
       </div>

@@ -27,6 +27,7 @@ OutputBaseFilename=Nook-win-x64
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=..\public\app-icon.ico
 CloseApplications=yes
 RestartApplications=no
 Uninstallable=yes

@@ -11,6 +11,27 @@ export interface StoredMedia {
 const DATABASE_NAME = 'nook-media-v1'
 let databasePromise: Promise<IDBDatabase> | undefined
 
+const KNOWN_MIME_TYPES = new Set([
+  'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif',
+  'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/wav', 'audio/webm', 'audio/aac',
+  'video/mp4', 'video/ogg', 'video/webm', 'video/quicktime', 'application/pdf',
+])
+
+const MIME_BY_EXTENSION: Record<string, string> = {
+  avif: 'image/avif', gif: 'image/gif', jpeg: 'image/jpeg', jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
+  aac: 'audio/aac', flac: 'audio/flac', m4a: 'audio/mp4', m4b: 'audio/mp4',
+  mp3: 'audio/mpeg', oga: 'audio/ogg', ogg: 'audio/ogg', opus: 'audio/ogg', wav: 'audio/wav', wave: 'audio/wav',
+  m4v: 'video/mp4', mov: 'video/quicktime', mp4: 'video/mp4', ogv: 'video/ogg', webm: 'video/webm',
+  pdf: 'application/pdf',
+}
+
+function resolveMediaType(file: File): string {
+  const supplied = file.type.toLowerCase().split(';', 1)[0].trim()
+  const extension = file.name.toLowerCase().split('.').pop() ?? ''
+  if (KNOWN_MIME_TYPES.has(supplied)) return supplied
+  return Object.prototype.hasOwnProperty.call(MIME_BY_EXTENSION, extension) ? MIME_BY_EXTENSION[extension] : 'application/octet-stream'
+}
+
 function database(): Promise<IDBDatabase> {
   if (!databasePromise) {
     databasePromise = new Promise((resolve, reject) => {
@@ -24,12 +45,9 @@ function database(): Promise<IDBDatabase> {
 }
 
 export async function saveMedia(file: File, id: string = crypto.randomUUID()): Promise<StoredMedia> {
-  const requestedType = file.type.toLowerCase()
-  const safeType = /^(image\/(png|jpeg|gif|webp|avif)|audio\/(mpeg|mp4|ogg|wav|webm|aac)|video\/(mp4|ogg|webm|quicktime)|application\/pdf)$/.test(requestedType)
-    ? requestedType
-    : 'application/octet-stream'
-  const blob = new Blob([file], { type: safeType })
-  const value: StoredMedia = { id, blob, name: file.name, mimeType: safeType, size: file.size }
+  const mimeType = resolveMediaType(file)
+  const blob = new Blob([file], { type: mimeType })
+  const value: StoredMedia = { id, blob, name: file.name, mimeType, size: file.size }
   if (window.nookDesktop) {
     await window.nookDesktop.saveMedia({ id, name: value.name, mimeType: value.mimeType, size: value.size }, new Uint8Array(await blob.arrayBuffer()))
     return value

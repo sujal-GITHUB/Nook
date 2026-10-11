@@ -4,7 +4,7 @@
 
 Nook is an offline-first multimedia editor for making complete documents from writing, photos, videos, audio recordings, links, PDFs, and other files. Use one local workspace for travel journals, visual diaries, personal stories, project notes, and archives.
 
-There are no accounts or cloud document storage. Desktop documents and media are kept on your computer. The browser version stores its workspace in the browser profile and is available offline after its first successful load.
+The website is the product landing and download page. The editor runs as a desktop application for Linux, Windows, and macOS; it does not open as a browser app. There are no accounts or cloud document storage. Documents and media are kept on the computer running the desktop app.
 
 ## Contents
 
@@ -96,26 +96,24 @@ The universal build supports Intel and Apple silicon Macs. It is not signed or n
 
 ### Bring media into the document
 
-- Add local images, video, audio, PDFs, and other files with the file picker or drag and drop. Paste images where supported.
-- View images with captions, play supported local audio and video, preview PDFs, and download other attachments from their file cards.
+- Add local images, video, audio, PDFs, and other files with **Add media** or by dragging files into a document. Paste images from the clipboard.
+- View images with captions, play supported local audio and video, and preview PDFs inline. Other formats appear as named file cards.
+- Save a copy of any attachment to a regular file through the system save dialog.
 - Keep an audio recording or voice memo made elsewhere as an attachment alongside the writing and images it belongs with. Nook does not currently record audio inside the app.
-- Files up to 500 MB can be added. Actual limits may be lower in a browser because browser storage quotas vary by device and browser.
+- Files up to 500 MB can be added, subject to available disk space.
 
 ### Keep work local and portable
 
 - Changes save automatically to local device storage; the editor shows when a page is saved.
-- Export a page as a versioned `.nook.json` document package that includes its referenced media, then import that package into Nook.
+- Choose **Save PDF** for a readable document you can open or share in other apps. **Backup** creates a portable `.nook.json` package, including the media, that can be imported back into Nook.
 - Switch between light and dark themes.
-- Use the desktop app without a network connection. The browser PWA caches its app shell for offline launches after it has loaded successfully once.
+- Use the installed desktop app without a network connection. The website is only needed to read about Nook and download installers.
 
-**Links stay links:** saving a web link does not save the linked page. Opening a remote destination requires an internet connection. The browser workspace and desktop workspace use separate local storage and do not sync with each other.
+**Links stay links:** saving a web link does not save the linked page. Opening a remote destination requires an internet connection; your local Nook documents remain available offline.
 
 ## Where your documents are stored
 
-- **Desktop:** document data and media are stored in Nook's application data on the current computer account.
-- **Browser/PWA:** documents and media are stored in the browser profile's IndexedDB. Browser storage quotas and profile deletion can affect availability.
-
-Nook does not provide account login, cloud storage, or automatic cross-device sync. Export `.nook.json` backups if you want a portable copy or a separate backup.
+Documents and media are stored in Nook's local application data on the current computer account. Nook does not provide account login, cloud storage, or automatic cross-device sync. Export `.nook.json` backups if you want a portable copy or a separate backup.
 
 ## Run from source
 
@@ -131,11 +129,13 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. The editor is at `/app/`. To run the Electron desktop shell during development:
+Open the local URL printed by Vite to view the landing page and download information. The editor is not served by the website. To build and run the Electron desktop editor during development:
 
 ```sh
 npm run desktop
 ```
+
+`npm run build` builds the website only. `npm run build:desktop` builds the editor renderer with file-relative assets for Electron.
 
 ### Build installers
 
@@ -149,13 +149,13 @@ npm run dist:mac      # Universal macOS DMG and ZIP; requires macOS
 
 If Inno Setup is installed in a nonstandard location, set `ISCC_PATH` to the `ISCC.exe` path before running the Windows build.
 
-GitHub Actions builds Linux, Windows, and macOS packages for branch pushes and pull requests. Those runs produce temporary artifacts. To publish downloadable installers, push a new version tag (for example, `v0.1.3`). The tag workflow builds all platforms and attaches the installers to a GitHub Release. The release job requires repository Actions permissions to write contents.
+GitHub Actions builds Linux, Windows, and macOS packages for branch pushes and pull requests. Those runs produce temporary artifacts. To publish downloadable installers, push a new version tag (for example, `v0.1.4`). The tag workflow builds all platforms and attaches the installers to a GitHub Release. The release job requires repository Actions permissions to write contents.
 
 ## Current limitations
 
 - In-app audio recording, cloud sync, accounts, and collaboration are not available.
-- PDF, HTML, and Markdown export are not available. The current portable export is `.nook.json`.
-- Browser storage is managed by the browser and may have quotas; the desktop app is preferable for large local media collections.
+- HTML and Markdown export are not available. Use PDF for a readable document copy and `.nook.json` for a portable editable backup.
+- Nook does not currently have a browser editor or browser-based document storage.
 - macOS builds are not signed or notarized, and Windows builds are not code-signed.
 
 ## Security

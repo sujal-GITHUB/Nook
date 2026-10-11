@@ -21,6 +21,8 @@ export type DesktopBridge = {
   deleteDocument: (id: string) => Promise<void>
   saveMedia: (metadata: MediaMetadata, bytes: Uint8Array) => Promise<void>
   getMedia: (id: string) => Promise<{ metadata: MediaMetadata; bytes: Uint8Array } | null>
+  saveMediaCopy: (id: string) => Promise<boolean>
+  exportPdf: (title: string) => Promise<boolean>
 }
 
 declare global {

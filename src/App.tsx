@@ -8,10 +8,8 @@ import { MediaBlock } from './MediaBlock'
 import { getMedia, saveMedia } from './mediaStore'
 import { createWelcomeDocument, deleteDocument as removeDocument, listDocuments, saveDocument } from './documentStore'
 import type { LocalDocument } from './desktopBridge'
-import LandingPage from './LandingPage'
-import DownloadPage from './DownloadPage'
 import {
-  ArrowDownToLine, Bold, Check, ChevronDown, Copy, FileText, Heading1, Heading2, ImagePlus,
+  ArrowDownToLine, Bold, Check, ChevronDown, Copy, FileDown, FileText, Heading1, Heading2, ImagePlus,
   Italic, Link2, List, PanelLeft, Plus, Quote, Redo2, Search, Sparkles, Strikethrough, Trash2, Undo2, Upload,
 } from 'lucide-react'
 
@@ -87,7 +85,7 @@ function sanitizeContent(value: unknown): JSONContent {
 
 const emptyContent = { type: 'doc', content: [{ type: 'paragraph' }] }
 
-function EditorWorkspace({ onHome }: { onHome: () => void }) {
+export function EditorWorkspace() {
   const [documents, setDocuments] = useState<NookDocument[]>([])
   const [activeId, setActiveId] = useState('')
   const [title, setTitle] = useState('')
@@ -95,7 +93,7 @@ function EditorWorkspace({ onHome }: { onHome: () => void }) {
   const [loadError, setLoadError] = useState('')
   const [saved, setSaved] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [dark, setDark] = useState(false)
+  const [dark, setDark] = useState(true)
   const saveTimer = useRef<number | undefined>(undefined)
   const saveQueue = useRef<Promise<void>>(Promise.resolve())
   const editGeneration = useRef(0)
@@ -113,6 +111,7 @@ function EditorWorkspace({ onHome }: { onHome: () => void }) {
   const [replaceTerm, setReplaceTerm] = useState('')
   const findOpenRef = useRef(false)
   const ingestMediaRef = useRef<(file?: File) => Promise<void>>(async () => undefined)
+  const ingestMediaBatchRef = useRef<(files?: FileList | File[]) => Promise<void>>(async () => undefined)
   titleRef.current = title
   activeIdRef.current = activeId
   documentsRef.current = documents
@@ -188,10 +187,10 @@ function EditorWorkspace({ onHome }: { onHome: () => void }) {
     content: emptyContent,
     editorProps: {
       handleDrop: (_view, event) => {
-        const file = event.dataTransfer?.files[0]
-        if (!file) return false
+        const files = event.dataTransfer?.files
+        if (!files?.length) return false
         event.preventDefault()
-        void ingestMediaRef.current(file)
+        void ingestMediaBatchRef.current(files)
         return true
       },
       handlePaste: (_view, event) => {
@@ -267,13 +266,17 @@ function EditorWorkspace({ onHome }: { onHome: () => void }) {
       const asset = await saveMedia(file)
       editor.chain().focus().insertContent({ type: 'media', attrs: { assetId: asset.id, name: asset.name, mimeType: asset.mimeType, size: asset.size } }).run()
       setNotice('Media added to this page')
-    } catch { setNotice('Could not save this file to local storage') }
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'Unknown storage error'
+      setNotice(`Could not attach “${file.name}”: ${reason}`)
+    }
   }
   const addMediaBatch = async (files?: FileList | File[]) => {
     if (!files) return
     for (const file of Array.from(files)) await addMedia(file)
   }
   ingestMediaRef.current = addMedia
+  ingestMediaBatchRef.current = addMediaBatch
 
   const importDocument = async (file?: File) => {
     if (!file || !editor) return
@@ -324,6 +327,16 @@ function EditorWorkspace({ onHome }: { onHome: () => void }) {
     window.clearTimeout(saveTimer.current)
     await persistDocument({ id: activeIdRef.current, title: titleRef.current, content: editor.getJSON(), updatedAt: new Date().toISOString() })
     setSaved(true)
+  }
+
+  const savePdf = async () => {
+    await saveCurrentNow()
+    if (!window.nookDesktop) {
+      setNotice('PDF export is available in the desktop app.')
+      return
+    }
+    const didSave = await window.nookDesktop.exportPdf(titleRef.current)
+    if (didSave) setNotice('PDF saved to your chosen location.')
   }
 
   const createDocument = async () => {
@@ -420,7 +433,7 @@ function EditorWorkspace({ onHome }: { onHome: () => void }) {
 
   return <div className="app-shell">
     <header className="topbar">
-      {window.nookDesktop ? <div className="brand"><div className="brand-mark">n</div><span>nook</span><span className="crumb">/</span><span className="crumb">Personal</span></div> : <button className="brand brand-home" onClick={onHome} aria-label="Back to Nook landing page"><div className="brand-mark">n</div><span>nook</span><span className="crumb">/</span><span className="crumb">Personal</span><ChevronDown size={14} /></button>}
+      <div className="brand"><img className="brand-mark" src="./app-icon.svg" alt="" /><span>nook</span><span className="crumb">/</span><span className="crumb">Personal</span></div>
       <div className="top-actions"><button className="icon-button" aria-label="Toggle sidebar" onClick={() => setSidebarOpen(!sidebarOpen)}><PanelLeft size={17} /></button></div>
     </header>
     <div className="workspace">
@@ -430,10 +443,10 @@ function EditorWorkspace({ onHome }: { onHome: () => void }) {
         <div className="section-label"><span>Pages</span><button className="icon-button" aria-label="Create page" title="Create page" onClick={() => void createDocument()}><Plus size={16} /></button></div>
         <label className="page-search"><Search size={14} /><input aria-label="Search pages" placeholder="Find a page…" value={pageSearch} onChange={event => setPageSearch(event.target.value)} /></label>
         <nav className="page-list" aria-label="Local pages">{documents.filter(document => document.title.toLocaleLowerCase().includes(pageSearch.toLocaleLowerCase())).map(document => <div key={document.id} className="page-row"><button className={document.id === activeId ? 'page-item selected' : 'page-item'} onClick={() => void selectDocument(document)}><FileText size={16} /><span>{document.title || 'Untitled page'}</span></button>{document.id === activeId && <button className="page-delete" aria-label={`Delete ${document.title || 'untitled page'}`} title="Delete page" onClick={() => void deleteCurrentDocument()}><Trash2 size={14} /></button>}</div>)}</nav>
-        <div className="sidebar-bottom"><button onClick={() => setDark(!dark)}><Sparkles size={16} /> {dark ? 'Light mode' : 'Dark mode'}</button><div className="storage"><small>{window.nookDesktop ? 'Pages and media stay on this device' : 'Pages and media stay in this browser'}</small></div></div>
+        <div className="sidebar-bottom"><button onClick={() => setDark(!dark)}><Sparkles size={16} /> {dark ? 'Light mode' : 'Dark mode'}</button><div className="storage"><small>Pages and media stay on this device</small></div></div>
       </aside>}
       <main className="main-content">
-        <div className="document-header"><div className="breadcrumbs"><span>Personal</span><span>/</span><span>Pages</span></div><div className="document-actions"><span className="save-state">{saved ? <><Check size={14} /> Saved locally</> : 'Saving…'}</span><button className="icon-button" aria-label="Find and replace in page" title="Find and replace (Ctrl/⌘+F)" onClick={() => setFindOpen(open => !open)}><Search size={16} /></button><button className="icon-button" aria-label="Duplicate page" title="Duplicate page" onClick={() => void duplicateDocument()}><Copy size={16} /></button><button className="icon-button" aria-label="Delete page" title="Delete page" onClick={() => void deleteCurrentDocument()}><Trash2 size={16} /></button><button className="icon-button" aria-label="Import document" title="Import document" onClick={() => importRef.current?.click()}><Upload size={16} /></button><button className="icon-button" aria-label="Export document" title="Export document with media" onClick={() => void exportDocument().catch(() => setNotice('Could not export because a media file is unavailable'))}><ArrowDownToLine size={17} /></button></div></div>
+        <div className="document-header"><div className="breadcrumbs"><span>Personal</span><span>/</span><span>Pages</span></div><div className="document-actions"><span className="save-state">{saved ? <><Check size={14} /> Saved locally</> : 'Saving…'}</span><button className="icon-button" aria-label="Find and replace in page" title="Find and replace (Ctrl/⌘+F)" onClick={() => setFindOpen(open => !open)}><Search size={16} /></button><button className="icon-button" aria-label="Duplicate page" title="Duplicate page" onClick={() => void duplicateDocument()}><Copy size={16} /></button><button className="icon-button" aria-label="Delete page" title="Delete page" onClick={() => void deleteCurrentDocument()}><Trash2 size={16} /></button><button className="icon-button" aria-label="Import Nook backup" title="Import a .nook.json backup" onClick={() => importRef.current?.click()}><Upload size={16} /></button><button className="document-export-button" aria-label="Save document as readable PDF" title="Save a readable PDF" onClick={() => void savePdf().catch(error => setNotice(error instanceof Error ? `Could not save PDF: ${error.message}` : 'Could not save PDF'))}><FileDown size={15} /><span>Save PDF</span></button><button className="document-backup-button" aria-label="Export Nook backup" title="Export portable backup (.nook.json)" onClick={() => void exportDocument().catch(() => setNotice('Could not export because a media file is unavailable'))}><ArrowDownToLine size={15} /><span>Backup</span></button></div></div>
         {findOpen && <section className="find-panel" aria-label="Find and replace">
           <label><span>Find</span><input autoFocus value={findTerm} onChange={event => setFindTerm(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') findNext() }} /></label>
           <label><span>Replace</span><input value={replaceTerm} onChange={event => setReplaceTerm(event.target.value)} /></label>
@@ -446,23 +459,15 @@ function EditorWorkspace({ onHome }: { onHome: () => void }) {
         <div className="editor-wrap">
           <div className="page-icon">✦</div>
           <input className="title-input" value={title} maxLength={500} onChange={e => updateTitle(e.target.value)} aria-label="Document title" />
-          <div className="toolbar-container"><div className="format-toolbar"><button className="format-select" onClick={() => setBlockMenuOpen(!blockMenuOpen)}>Style <ChevronDown size={13} /></button>{toolbar.map(({ label, icon: Icon, action, active }) => <button key={label} className={active ? 'format-button active' : 'format-button'} aria-label={label} onClick={action}><Icon size={16} /></button>)}<span className="toolbar-divider" /><button className="format-button" aria-label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()}><List size={16} /></button><button className="format-button" aria-label="Quote" onClick={() => editor?.chain().focus().toggleBlockquote().run()}><Quote size={16} /></button><span className="toolbar-divider" /><button className="format-button" aria-label="Add media" title="Add image, audio, video, PDF, or file" onClick={() => uploadRef.current?.click()}><ImagePlus size={16} /></button><span className="toolbar-spacer" /><button className="format-button" aria-label="Undo" onClick={() => editor?.chain().focus().undo().run()}><Undo2 size={16} /></button><button className="format-button" aria-label="Redo" onClick={() => editor?.chain().focus().redo().run()}><Redo2 size={16} /></button></div>{blockMenuOpen && <div className="block-menu"><button onClick={() => { editor?.chain().focus().setParagraph().run(); setBlockMenuOpen(false) }}>Paragraph</button><button onClick={() => { editor?.chain().focus().toggleHeading({ level: 1 }).run(); setBlockMenuOpen(false) }}><Heading1 size={16} /> Heading 1</button><button onClick={() => { editor?.chain().focus().toggleHeading({ level: 2 }).run(); setBlockMenuOpen(false) }}><Heading2 size={16} /> Heading 2</button></div>}</div>
+          <h1 className="print-title">{title || 'Untitled document'}</h1>
+        <div className="toolbar-container"><div className="format-toolbar"><button className="format-select" onClick={() => setBlockMenuOpen(!blockMenuOpen)}>Style <ChevronDown size={13} /></button>{toolbar.map(({ label, icon: Icon, action, active }) => <button key={label} className={active ? 'format-button active' : 'format-button'} aria-label={label} onClick={action}><Icon size={16} /></button>)}<span className="toolbar-divider" /><button className="format-button" aria-label="Bulleted list" onClick={() => editor?.chain().focus().toggleBulletList().run()}><List size={16} /></button><button className="format-button" aria-label="Quote" onClick={() => editor?.chain().focus().toggleBlockquote().run()}><Quote size={16} /></button><span className="toolbar-divider" /><button className="format-button format-add-media" aria-label="Add media" title="Choose images, audio, video, PDFs, or other files" onClick={() => uploadRef.current?.click()}><ImagePlus size={16} /><span>Add media</span></button><span className="toolbar-spacer" /><button className="format-button" aria-label="Undo" onClick={() => editor?.chain().focus().undo().run()}><Undo2 size={16} /></button><button className="format-button" aria-label="Redo" onClick={() => editor?.chain().focus().redo().run()}><Redo2 size={16} /></button></div>{blockMenuOpen && <div className="block-menu"><button onClick={() => { editor?.chain().focus().setParagraph().run(); setBlockMenuOpen(false) }}>Paragraph</button><button onClick={() => { editor?.chain().focus().toggleHeading({ level: 1 }).run(); setBlockMenuOpen(false) }}><Heading1 size={16} /> Heading 1</button><button onClick={() => { editor?.chain().focus().toggleHeading({ level: 2 }).run(); setBlockMenuOpen(false) }}><Heading2 size={16} /> Heading 2</button></div>}</div>
           <input ref={uploadRef} className="hidden-input" type="file" multiple onChange={event => { void addMediaBatch(event.target.files ?? undefined); event.currentTarget.value = '' }} />
           <input ref={importRef} className="hidden-input" type="file" accept="application/json,.json" onChange={event => { void importDocument(event.target.files?.[0]); event.currentTarget.value = '' }} />
           {notice && <div className="notice" role="status">{notice}<button aria-label="Dismiss notification" onClick={() => setNotice('')}>×</button></div>}
           <EditorContent editor={editor} />
-          <div className="editor-hint"><span>Changes save automatically on this device</span><span>Use the toolbar to format</span></div>
+          <div className="editor-hint"><span>Changes save automatically on this device</span><span>Add media, drop files, or paste an image</span></div>
         </div>
       </main>
     </div>
   </div>
 }
-
-function App() {
-  const [screen, setScreen] = useState<'landing' | 'download' | 'workspace'>(() => Boolean(window.nookDesktop) || window.location.pathname.startsWith('/app') ? 'workspace' : window.location.pathname.startsWith('/download') ? 'download' : 'landing')
-  if (screen === 'workspace') return <EditorWorkspace onHome={() => setScreen('landing')} />
-  if (screen === 'download') return <DownloadPage />
-  return <LandingPage />
-}
-
-export default App

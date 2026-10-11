@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { NodeViewWrapper, type NodeViewProps, ReactNodeViewRenderer } from '@tiptap/react'
 import { Node } from '@tiptap/core'
-import { FileText, ImageOff } from 'lucide-react'
+import { Download, FileText, ImageOff } from 'lucide-react'
 import { getMedia } from './mediaStore'
 
 function MediaView({ node, updateAttributes, selected }: NodeViewProps) {
@@ -9,6 +9,8 @@ function MediaView({ node, updateAttributes, selected }: NodeViewProps) {
   const [src, setSrc] = useState<string>()
   const [storedMime, setStoredMime] = useState<string>()
   const [missing, setMissing] = useState(false)
+  const [savingCopy, setSavingCopy] = useState(false)
+  const [copyNotice, setCopyNotice] = useState('')
 
   useEffect(() => {
     let objectUrl: string | undefined
@@ -24,9 +26,25 @@ function MediaView({ node, updateAttributes, selected }: NodeViewProps) {
     return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl) }
   }, [assetId])
 
+  const saveCopy = async () => {
+    if (!window.nookDesktop || savingCopy) return
+    setSavingCopy(true)
+    setCopyNotice('')
+    try {
+      const didSave = await window.nookDesktop.saveMediaCopy(assetId)
+      if (didSave) setCopyNotice('Saved')
+    } catch (error) {
+      setCopyNotice(error instanceof Error ? error.message : 'Could not save attachment')
+    } finally {
+      setSavingCopy(false)
+    }
+  }
+
   const renderType = storedMime ?? mimeType
   return <NodeViewWrapper className={`media-block${selected ? ' media-selected' : ''}`} contentEditable={false}>
-    {missing ? <div className="media-missing"><ImageOff size={18} /><span>Media unavailable: {name}</span></div> : !src ? <div className="media-loading">Loading {name}…</div> : renderType.startsWith('image/') ? <figure><img src={src} alt={name} /><figcaption><input aria-label="Image caption" value={node.attrs.caption ?? ''} placeholder="Add a caption…" onChange={event => updateAttributes({ caption: event.target.value })} /></figcaption></figure> : renderType.startsWith('video/') ? <video src={src} controls preload="metadata" /> : renderType.startsWith('audio/') ? <audio src={src} controls preload="metadata" /> : renderType === 'application/pdf' ? <iframe src={src} title={name} sandbox="" /> : <a className="attachment-card" href={src} download={name}><FileText size={20} /><span><strong>{name}</strong><small>{formatBytes(node.attrs.size)}</small></span></a>}
+    {missing ? <div className="media-missing"><ImageOff size={18} /><span>Media unavailable: {name}</span></div> : !src ? <div className="media-loading">Loading {name}…</div> : renderType.startsWith('image/') ? <figure><img src={src} alt={name} /><figcaption><input aria-label="Image caption" value={node.attrs.caption ?? ''} placeholder="Add a caption…" onChange={event => updateAttributes({ caption: event.target.value })} /></figcaption></figure> : renderType.startsWith('video/') ? <video src={src} controls preload="metadata" /> : renderType.startsWith('audio/') ? <audio src={src} controls preload="metadata" /> : renderType === 'application/pdf' ? <iframe src={src} title={name} sandbox="" /> : <div className="attachment-card"><FileText size={20} /><span><strong>{name}</strong><small>{formatBytes(node.attrs.size)}</small></span></div>}
+    {src && !renderType.startsWith('image/') && <span className="media-print-label">Attachment: {name}</span>}
+    {src && <div className="media-actions"><button type="button" onClick={() => void saveCopy()} disabled={savingCopy}><Download size={13} />{savingCopy ? 'Saving…' : 'Save a copy'}</button><span role="status">{copyNotice}</span></div>}
     {!renderType.startsWith('image/') && <div className="media-caption"><input aria-label="Media caption" value={node.attrs.caption ?? ''} placeholder="Add a caption…" onChange={event => updateAttributes({ caption: event.target.value })} /></div>}
   </NodeViewWrapper>
 }

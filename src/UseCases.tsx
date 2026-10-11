@@ -1,5 +1,8 @@
-import { Archive, BookOpen, FileText, Images, Map, PenLine } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import {
+  RiArchiveLine as Archive, RiBookOpenLine as BookOpen, RiFileTextLine as FileText,
+  RiGalleryLine as Images, RiMap2Line as Map, RiQuillPenLine as PenLine,
+  type RemixiconComponentType,
+} from '@remixicon/react'
 
 const FEATURES = [
   {
@@ -32,7 +35,7 @@ const FEATURES = [
     description: 'Keep meaningful photos, documents, links, and media saved together on your device.',
     icon: Archive
   }
-] as { title: string; description: string; icon: LucideIcon }[]
+] as { title: string; description: string; icon: RemixiconComponentType }[]
 
 function Feature({ title, description, icon: Icon, index }: (typeof FEATURES)[number] & { index: number }) {
   return <article className="aceternity-feature" data-row={index < 3 ? 'top' : 'bottom'} data-reveal>

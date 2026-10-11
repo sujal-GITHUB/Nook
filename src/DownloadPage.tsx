@@ -1,4 +1,7 @@
-import { ArrowDownToLine, ArrowLeft, ArrowUpRight, Apple, PanelsTopLeft, Smartphone, Terminal } from 'lucide-react'
+import {
+  RiDownload2Line as ArrowDownToLine, RiArrowLeftLine as ArrowLeft, RiArrowRightUpLine as ArrowUpRight,
+  RiAppleLine as Apple, RiWindowsLine as PanelsTopLeft, RiAndroidLine as Smartphone, RiUbuntuLine as Terminal,
+} from '@remixicon/react'
 import Dither from './Dither'
 
 const repository = 'https://github.com/sujal-GITHUB/Nook'

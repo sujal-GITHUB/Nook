@@ -1,5 +1,9 @@
 import { useEffect, useRef } from 'react'
-import { ArrowDownRight, ArrowUpRight, AudioLines, Download, FileText, HardDrive, Images, Link2, Paperclip, ShieldCheck, WifiOff } from 'lucide-react'
+import {
+  RiArrowRightDownLine as ArrowDownRight, RiArrowRightUpLine as ArrowUpRight, RiVoiceprintLine as AudioLines,
+  RiDownloadLine as Download, RiFileTextLine as FileText, RiHardDrive2Line as HardDrive, RiGalleryLine as Images,
+  RiLinkM as Link2, RiAttachment2 as Paperclip, RiShieldCheckLine as ShieldCheck, RiWifiOffLine as WifiOff,
+} from '@remixicon/react'
 import Dither from './Dither'
 import ShuffleText from './ShuffleText'
 import UseCases from './UseCases'

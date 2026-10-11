@@ -10,9 +10,14 @@ import { getMedia, saveMedia } from './mediaStore'
 import { createWelcomeDocument, deleteDocument as removeDocument, listDocuments, saveDocument } from './documentStore'
 import type { LocalDocument } from './desktopBridge'
 import {
-  ArrowDownToLine, Bold, Check, ChevronDown, Copy, FileDown, FileText, Heading1, Heading2, ImagePlus,
-  Italic, Link2, List, Music2, Palette, PanelLeft, Plus, Quote, Redo2, Search, Sparkles, Strikethrough, Trash2, Undo2, Upload,
-} from 'lucide-react'
+  RiDownload2Line as ArrowDownToLine, RiBold as Bold, RiCheckLine as Check, RiArrowDownSLine as ChevronDown,
+  RiFileCopyLine as Copy, RiFileDownloadLine as FileDown, RiFileTextLine as FileText, RiH1 as Heading1,
+  RiH2 as Heading2, RiImageAddLine as ImagePlus, RiItalic as Italic, RiLinkM as Link2,
+  RiListUnordered as List, RiMusic2Line as Music2, RiPaletteLine as Palette, RiSideBarLine as PanelLeft,
+  RiAddLine as Plus, RiDoubleQuotesL as Quote, RiArrowGoForwardLine as Redo2, RiSearchLine as Search,
+  RiSparkling2Line as Sparkles, RiStrikethrough as Strikethrough, RiDeleteBin6Line as Trash2,
+  RiArrowGoBackLine as Undo2, RiUploadLine as Upload,
+} from '@remixicon/react'
 
 type NookDocument = LocalDocument
 const initialContent = {

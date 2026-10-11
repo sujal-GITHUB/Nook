@@ -1,7 +1,7 @@
 {
   "name": "nook-editor",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "An offline-first creative workspace for stories, visual diaries, and personal archives.",
   "author": {
@@ -44,6 +44,10 @@
     "productName": "Nook",
     "artifactName": "Nook-${os}-${arch}.${ext}",
     "asar": true,
+    "compression": "maximum",
+    "electronLanguages": [
+      "en-US"
+    ],
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -52,10 +56,14 @@
       "dist/**/*",
       "desktop/**/*",
       "package.json",
-      "node_modules/sql.js/**/*"
+      "node_modules/sql.js/package.json",
+      "node_modules/sql.js/LICENSE",
+      "node_modules/sql.js/dist/sql-wasm.js",
+      "node_modules/sql.js/dist/sql-wasm.wasm"
     ],
     "linux": {
       "category": "Office",
+      "compression": "maximum",
       "syncDesktopName": true,
       "maintainer": "Nook Project <sujal-GITHUB@users.noreply.github.com>",
       "target": [
@@ -64,19 +72,30 @@
       ],
       "icon": "public/app-icon-512.png"
     },
+    "appImage": {
+      "compression": "xz"
+    },
+    "deb": {
+      "compression": "xz"
+    },
     "win": {
+      "compression": "maximum",
       "icon": "public/app-icon.ico",
       "target": [
         "dir"
       ]
     },
     "mac": {
+      "compression": "maximum",
       "icon": "public/app-icon-1024.png",
       "target": [
         "dmg",
         "zip"
       ],
       "category": "public.app-category.productivity"
+    },
+    "dmg": {
+      "format": "UDBZ"
     }
   },
   "devDependencies": {

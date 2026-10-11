@@ -1100,8 +1100,8 @@ kbd {
   }
 
   .download-copy h1 {
-    font-size: clamp(54px, 11.5vw, 72px);
-    line-height: .8;
+    font-size: clamp(40px, 10.8vw, 72px);
+    line-height: .84;
   }
 
   .download-copy .hero-description {
@@ -1254,6 +1254,14 @@ kbd {
   position: relative;
   z-index: 1;
   transition: transform 220ms ease;
+}
+
+.bento-grid-content>svg {
+  width: 19px;
+  height: 19px;
+  margin-bottom: 11px;
+  color: var(--red);
+  stroke-width: 1.5;
 }
 
 .bento-grid-item:hover .bento-grid-content { transform: translateX(6px); }
